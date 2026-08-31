@@ -1,0 +1,17 @@
+# OS clutter
+.DS_Store
+Thumbs.db
+desktop.ini
+._*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Never commit client data — these are the backup exports the app produces
+*.csv
+origo_backup_*.json
+origo_matters_*.json
+backups/

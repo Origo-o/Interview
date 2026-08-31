@@ -1,0 +1,2408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0f766e" />
+<title>Origo — Client Interview Kiosk / अशिल मुलाखत प्रणाली</title>
+<style>
+:root{
+  --bg:#eef7f6; --panel:#ffffff; --panel-2:#f5fbfa; --text:#0f2e2d; --muted:#5d7d7b;
+  --line:#cde4e1; --line-2:#e4f1ef; --teal:#0f766e; --teal-2:#115e59; --teal-3:#14b8a6;
+  --teal-soft:#d8f2ee; --accent:#e0f2f1; --danger:#b91c1c; --danger-soft:#fee2e2;
+  --warn:#b45309; --warn-soft:#fff1e0; --ok:#166534; --ok-soft:#dcfce7;
+  --shadow:0 10px 30px rgba(9,60,57,.10); --shadow-lg:0 24px 60px rgba(9,60,57,.18);
+  --r:18px; --r-lg:24px; --tap:60px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:rgba(20,184,166,.15)}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'Segoe UI',Inter,system-ui,-apple-system,BlinkMacSystemFont,'Noto Sans Devanagari','Nirmala UI',sans-serif;
+  background:var(--bg); color:var(--text); min-height:100vh; font-size:17px; line-height:1.45;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+input,select,textarea,button{font:inherit;font-family:inherit}
+.mr{display:block;font-size:.86em;color:var(--muted);font-weight:500;margin-top:1px}
+body.lang-mr .en-t{font-size:.84em;color:var(--muted);font-weight:500;order:2}
+body.lang-mr .lbl,body.lang-mr .qlab{display:flex;flex-direction:column}
+body.lang-mr .mr{order:1;font-size:1em;color:inherit;font-weight:inherit;margin-top:0}
+body.hide-mr .mr{display:none}
+.hidden{display:none !important}
+
+/* ---------- APP BAR ---------- */
+.appbar{
+  position:sticky;top:0;z-index:60;background:linear-gradient(135deg,#0f766e,#115e59);
+  color:#fff;padding:10px 14px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 6px 22px rgba(9,60,57,.22);padding-top:calc(10px + env(safe-area-inset-top));
+}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .logo{
+  width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.16);
+  display:grid;place-items:center;font-weight:800;font-size:1.15rem;flex:none;border:1px solid rgba(255,255,255,.2)
+}
+.brand b{font-size:1.12rem;display:block;line-height:1.1}
+.brand span{font-size:.74rem;opacity:.85;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appbar .spacer{flex:1}
+.chip-btn{
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;
+  border-radius:999px;padding:9px 14px;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap
+}
+.chip-btn:hover{background:rgba(255,255,255,.24)}
+.chip-btn.on{background:#fff;color:var(--teal-2)}
+
+/* ---------- TAB NAV ---------- */
+.tabs{
+  display:flex;gap:6px;padding:8px 10px;background:#fff;border-bottom:1px solid var(--line);
+  position:sticky;top:62px;z-index:55;overflow-x:auto;scrollbar-width:none
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  border:1px solid var(--line);background:var(--panel-2);color:var(--muted);border-radius:999px;
+  padding:10px 16px;font-weight:700;font-size:.92rem;cursor:pointer;white-space:nowrap;display:flex;gap:7px;align-items:center
+}
+.tab.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.tab .ic{font-size:1.05rem}
+
+.wrap{max-width:1180px;margin:0 auto;padding:16px 14px 120px}
+.wrap.wide{max-width:1560px}
+
+/* ---------- CARDS ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.card.tight{padding:14px}
+.card h2{margin:0 0 4px;font-size:1.24rem}
+.card h3{margin:0 0 10px;font-size:1.05rem}
+.sub{color:var(--muted);font-size:.92rem;margin:0 0 12px}
+.sect-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.hr{height:1px;background:var(--line-2);margin:14px 0}
+
+/* ---------- BUTTONS ---------- */
+button{border:none;border-radius:14px;padding:13px 18px;cursor:pointer;font-weight:700;transition:transform .05s,background .15s,box-shadow .15s}
+button:active{transform:translateY(1px)}
+.btn{min-height:52px}
+.btn-primary{background:var(--teal);color:#fff;box-shadow:0 6px 18px rgba(15,118,110,.28)}
+.btn-primary:hover{background:var(--teal-2)}
+.btn-secondary{background:var(--teal-soft);color:var(--teal-2)}
+.btn-ghost{background:#fff;color:var(--text);border:1px solid var(--line)}
+.btn-danger{background:var(--danger-soft);color:var(--danger)}
+.btn-warn{background:var(--warn-soft);color:var(--warn)}
+.btn-ok{background:var(--ok-soft);color:var(--ok)}
+.btn-lg{min-height:var(--tap);font-size:1.05rem;padding:16px 22px;border-radius:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row.end{justify-content:flex-end}
+.grow{flex:1;min-width:0}
+
+/* ---------- HOME TILES ---------- */
+.hero{
+  background:linear-gradient(140deg,#0f766e,#134e4a);color:#fff;border-radius:var(--r-lg);
+  padding:26px 24px;box-shadow:var(--shadow-lg);margin-bottom:18px;position:relative;overflow:hidden
+}
+.hero::after{content:"";position:absolute;width:230px;height:230px;right:-70px;top:-80px;border-radius:50%;background:rgba(255,255,255,.07)}
+.hero h1{margin:0 0 8px;font-size:1.9rem;line-height:1.15}
+.hero p{margin:0;opacity:.92;max-width:720px;font-size:1rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.tile{
+  background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;text-align:left;
+  box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:132px;justify-content:center
+}
+.tile:hover{border-color:var(--teal-3);box-shadow:0 14px 34px rgba(9,60,57,.16)}
+.tile .ic{font-size:2rem;line-height:1}
+.tile b{font-size:1.1rem}
+.tile small{color:var(--muted);font-size:.86rem;line-height:1.35}
+.tile.big{min-height:170px;background:linear-gradient(140deg,#0f766e,#0d9488);color:#fff;border:none}
+.tile.big small{color:rgba(255,255,255,.9)}
+
+/* ---------- STATS ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.stat{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:14px}
+.stat .n{display:block;font-size:1.7rem;font-weight:800;color:var(--teal-2);line-height:1.1}
+.stat .l{color:var(--muted);font-size:.85rem}
+
+/* ---------- WIZARD ---------- */
+.wiz-head{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:14px}
+.wiz-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.wiz-step-name{font-weight:800;font-size:1.05rem}
+.wiz-count{color:var(--muted);font-size:.88rem;font-weight:700}
+.bar{height:10px;background:var(--line-2);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--teal-3),var(--teal));border-radius:99px;transition:width .3s}
+.dots{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.dots::-webkit-scrollbar{display:none}
+.dot{
+  border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:7px 12px;
+  font-size:.78rem;font-weight:700;white-space:nowrap;cursor:pointer;flex:none
+}
+.dot.done{background:var(--ok-soft);color:var(--ok);border-color:#bbf7d0}
+.dot.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+.q{border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;background:#fff}
+.q.new{animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.q>.qlab{font-weight:700;font-size:1.05rem;display:block;margin-bottom:3px}
+.q>.qlab .en-t{display:inline}
+.q.req>.qlab .en-t::after{content:" *";color:var(--danger)}
+.q .qhint{
+  color:var(--muted);font-size:.88rem;margin:6px 0 12px;background:var(--panel-2);
+  border-left:3px solid var(--teal-3);padding:8px 11px;border-radius:0 10px 10px 0
+}
+.q .qhint b{color:var(--teal-2)}
+.q.err{border-color:var(--danger);background:#fffafa}
+
+/* option cards = the "KFC touch" part */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:10px;margin-top:10px}
+.opts.narrow{grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr))}
+.opt{
+  border:2px solid var(--line);background:#fff;border-radius:15px;padding:14px 14px;min-height:var(--tap);
+  display:flex;align-items:center;gap:11px;cursor:pointer;text-align:left;font-weight:700;color:var(--text);
+  line-height:1.25;transition:.12s
+}
+.opt:hover{border-color:var(--teal-3);background:#f6fffd}
+.opt.on{border-color:var(--teal);background:var(--teal-soft);box-shadow:0 6px 16px rgba(15,118,110,.16)}
+.opt .oic{font-size:1.5rem;flex:none;line-height:1}
+.opt .otx{min-width:0}
+.opt .otx small{display:block;font-weight:500;color:var(--muted);font-size:.8rem}
+.opt.on .otx small{color:var(--teal-2)}
+.opt .tick{margin-left:auto;color:var(--teal);font-weight:900;opacity:0;flex:none}
+.opt.on .tick{opacity:1}
+
+/* fields */
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.f{display:flex;flex-direction:column;gap:6px}
+.f>span.lbl{font-weight:700;font-size:.94rem}
+input[type=text],input[type=tel],input[type=email],input[type=number],input[type=date],input[type=time],select,textarea{
+  width:100%;border:2px solid var(--line);background:#fff;color:var(--text);padding:13px 14px;
+  border-radius:13px;outline:none;min-height:52px;transition:.15s
+}
+select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'><path d='M3 6l5 5 5-5' fill='none' stroke='%230f766e' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:40px}
+textarea{min-height:96px;resize:vertical;line-height:1.45}
+input:focus,select:focus,textarea:focus{border-color:var(--teal-3);box-shadow:0 0 0 4px rgba(20,184,166,.14)}
+.inline-suggest{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.sug{background:var(--panel-2);border:1px dashed #b9d8d3;color:var(--teal-2);border-radius:999px;padding:8px 13px;font-size:.85rem;font-weight:700;cursor:pointer}
+.sug:hover{background:var(--teal-soft);border-style:solid}
+
+/* sticky wizard footer */
+.wiz-foot{
+  position:fixed;left:0;right:0;bottom:0;z-index:70;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);
+  border-top:1px solid var(--line);padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+  display:flex;gap:10px;align-items:center;box-shadow:0 -8px 26px rgba(9,60,57,.10)
+}
+.wiz-foot .inner{max-width:1180px;margin:0 auto;display:flex;gap:10px;width:100%;align-items:center}
+.wiz-foot button{min-height:56px;font-size:1.02rem}
+.wiz-foot .nx{flex:1.6}
+.wiz-foot .bk{flex:1;max-width:150px}
+.autosave{font-size:.78rem;color:var(--muted);text-align:center;flex:none;padding:0 6px;display:none}
+@media(min-width:760px){.autosave{display:block}}
+
+/* ---------- CHECKLIST ---------- */
+.doc{
+  display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;
+  padding:12px 14px;background:#fff;margin-bottom:9px;flex-wrap:wrap
+}
+.doc .dn{flex:1;min-width:170px;font-weight:700}
+.doc .dn small{display:block;font-weight:500;color:var(--muted);font-size:.82rem}
+.doc.recv{background:#f2fdf7;border-color:#bbf7d0}
+.doc.na{opacity:.55;background:#fafafa}
+.seg{display:flex;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;flex:none}
+.seg button{border-radius:0;padding:11px 13px;font-size:.84rem;background:#fff;color:var(--muted);min-height:46px;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:none}
+.seg button.on[data-v=received]{background:var(--ok);color:#fff}
+.seg button.on[data-v=pending]{background:var(--warn);color:#fff}
+.seg button.on[data-v=na]{background:#94a3b8;color:#fff}
+.doc .x{background:transparent;color:var(--danger);padding:8px 10px;font-size:1.1rem;min-height:auto}
+.doc-note{flex-basis:100%;margin-top:2px}
+
+/* ---------- TABLES / LISTS ---------- */
+.mlist{display:grid;gap:11px}
+.mcard{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;display:grid;gap:9px;box-shadow:0 3px 12px rgba(9,60,57,.05)}
+.mcard h4{margin:0;font-size:1.06rem}
+.mmeta{color:var(--muted);font-size:.86rem;display:flex;flex-wrap:wrap;gap:6px 14px}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 11px;font-size:.79rem;font-weight:700;border:1px solid}
+.pill.ok{background:var(--ok-soft);color:var(--ok);border-color:#bbf7d0}
+.pill.warn{background:var(--warn-soft);color:var(--warn);border-color:#fed7aa}
+.pill.info{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.pill.tealp{background:var(--teal-soft);color:var(--teal-2);border-color:#99e6dd}
+.pill.red{background:var(--danger-soft);color:var(--danger);border-color:#fecaca}
+.empty{text-align:center;color:var(--muted);padding:34px 16px;border:2px dashed var(--line);border-radius:16px;background:var(--panel-2)}
+.empty .ic{font-size:2.4rem;display:block;margin-bottom:8px}
+
+/* review */
+.rev{display:grid;gap:10px}
+.rgrp{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.rgrp>summary{cursor:pointer;font-weight:800;color:var(--teal-2);padding:13px 15px;background:var(--panel-2);list-style:none;display:flex;justify-content:space-between;align-items:center}
+.rgrp>summary::-webkit-details-marker{display:none}
+.rgrp>summary::after{content:"▾";color:var(--teal)}
+.rgrp[open]>summary::after{content:"▴"}
+.rbody{padding:6px 15px 14px}
+.rrow{display:grid;grid-template-columns:minmax(150px,38%) 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-2)}
+.rrow:last-child{border-bottom:none}
+.rrow .k{color:var(--muted);font-size:.88rem;font-weight:600}
+.rrow .v{font-weight:600;white-space:pre-wrap;word-break:break-word}
+.rrow .v.blank{color:#b6c8c6;font-weight:500;font-style:italic}
+.rrow .edit{background:none;color:var(--teal);font-size:.8rem;padding:2px 6px;min-height:auto}
+
+/* ledger */
+.led{display:grid;gap:8px;max-height:420px;overflow:auto}
+.ledi{border-left:4px solid var(--teal-3);padding:9px 12px;background:#f6fcfb;border-radius:0 12px 12px 0}
+.ledi b{font-size:.93rem;display:block}
+.ledi small{color:var(--muted);font-size:.8rem}
+
+/* toast */
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;z-index:200;display:grid;gap:8px;width:min(520px,calc(100vw - 28px));pointer-events:none}
+.toast{background:#0f2e2d;color:#fff;padding:14px 16px;border-radius:14px;box-shadow:var(--shadow-lg);font-weight:600;animation:tin .25s;display:flex;gap:10px;align-items:center}
+.toast.good{background:#0f766e}.toast.bad{background:#991b1b}.toast.warn{background:#92400e}
+@keyframes tin{from{opacity:0;transform:translateY(14px)}to{opacity:1}}
+
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(5,29,30,.55);z-index:150;display:grid;place-items:center;padding:14px}
+.modal{background:#fff;border-radius:20px;width:min(620px,100%);max-height:88vh;overflow:auto;box-shadow:var(--shadow-lg);padding:20px}
+.modal h3{margin:0 0 12px}
+
+/* advocate table */
+.tbl{width:100%;border-collapse:collapse;font-size:.92rem}
+.tbl th,.tbl td{border-bottom:1px solid var(--line-2);padding:9px 8px;text-align:left;vertical-align:top}
+.tbl th{color:var(--muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em}
+.scrollx{overflow-x:auto}
+
+.note{background:#f9fffe;border:1px dashed #b9d8d3;padding:11px 13px;border-radius:12px;color:var(--muted);font-size:.89rem}
+.note.warnn{background:var(--warn-soft);border-color:#fed7aa;color:#7c2d12}
+kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px;font-size:.82em;font-weight:700}
+
+/* ---------- PIN LOCK ---------- */
+.lock{
+  position:fixed;inset:0;z-index:500;background:linear-gradient(150deg,#0f766e 0%,#0b3b38 100%);
+  display:grid;place-items:center;padding:18px;overflow:auto
+}
+.lock-box{
+  width:min(400px,100%);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);
+  border-radius:26px;padding:26px 22px;text-align:center;color:#fff;backdrop-filter:blur(10px);
+  box-shadow:0 30px 80px rgba(0,0,0,.32)
+}
+.lock-logo{
+  width:62px;height:62px;border-radius:19px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24);
+  display:grid;place-items:center;font-size:1.7rem;font-weight:800;margin:0 auto 12px
+}
+.lock-box h2{margin:0 0 3px;font-size:1.5rem}
+.lock-box .lsub{margin:0 0 20px;opacity:.82;font-size:.93rem}
+.pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:8px;min-height:22px}
+.pin-dots i{
+  width:17px;height:17px;border-radius:50%;border:2px solid rgba(255,255,255,.5);
+  transition:.15s;display:block
+}
+.pin-dots i.on{background:#fff;border-color:#fff;transform:scale(1.14)}
+.lock-msg{min-height:22px;font-size:.88rem;font-weight:700;margin-bottom:12px;color:#ffd9d9}
+.lock-msg.ok{color:#bbf7d0}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.keypad button{
+  background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);color:#fff;
+  font-size:1.45rem;font-weight:700;border-radius:17px;min-height:64px;transition:.1s
+}
+.keypad button:hover{background:rgba(255,255,255,.24)}
+.keypad button:active{transform:scale(.95)}
+.keypad button.act{font-size:1rem;background:rgba(255,255,255,.07)}
+.keypad button.go{background:#fff;color:var(--teal-2)}
+.lock-foot{margin-top:16px;font-size:.8rem;opacity:.65;line-height:1.5}
+.lock.shake .lock-box{animation:shk .4s}
+@keyframes shk{0%,100%{transform:translateX(0)}20%{transform:translateX(-11px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+body.locked{overflow:hidden}
+body.locked .appbar,body.locked .tabs,body.locked .wrap,body.locked .wiz-foot{filter:blur(9px);pointer-events:none;user-select:none}
+
+/* ---------- PRINT ---------- */
+#printArea{display:none}
+@media print{
+  body{background:#fff;font-size:12pt}
+  .appbar,.tabs,.wiz-foot,#toast,.noprint,.wrap{display:none !important}
+  #printArea{display:block !important;padding:0;margin:0}
+  #printArea .psheet{page-break-after:always}
+  #printArea .psheet:last-child{page-break-after:auto}
+  #printArea h1{font-size:19pt;margin:0 0 2pt}
+  #printArea h2{font-size:13pt;margin:14pt 0 5pt;border-bottom:1.2pt solid #0f766e;padding-bottom:3pt;color:#0f766e}
+  #printArea table{width:100%;border-collapse:collapse;font-size:10.5pt}
+  #printArea th,#printArea td{border:.6pt solid #999;padding:5pt 6pt;text-align:left;vertical-align:top}
+  #printArea th{background:#e8f5f3}
+  #printArea .phead{border-bottom:2.4pt solid #0f766e;padding-bottom:7pt;margin-bottom:9pt}
+  #printArea .pmuted{color:#555;font-size:9.5pt}
+  #printArea .sign{margin-top:26pt;display:flex;justify-content:space-between;font-size:10pt}
+  #printArea .kv{display:grid;grid-template-columns:32% 68%;font-size:10.5pt}
+  #printArea .kv>div{border-bottom:.5pt solid #ddd;padding:3.5pt 4pt}
+  #printArea .kv>div.k{color:#444;font-weight:600;background:#f6faf9}
+  @page{margin:13mm}
+}
+@media(max-width:640px){
+  body{font-size:16px}
+  .wrap{padding:12px 11px 130px}
+  .hero{padding:20px 17px;border-radius:20px}
+  .hero h1{font-size:1.5rem}
+  .card{padding:15px;border-radius:16px}
+  .rrow{grid-template-columns:1fr;gap:2px}
+  .brand span{display:none}
+  .tabs{top:58px}
+}
+</style>
+</head>
+<body class="lang-both locked">
+
+<!-- ============ PIN LOCK ============ -->
+<div class="lock" id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-logo">O</div>
+    <h2>Origo</h2>
+    <p class="lsub">Enter office PIN<span class="mr" style="color:rgba(255,255,255,.72)">कार्यालयाचा पिन टाका</span></p>
+    <div class="pin-dots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+    <div class="lock-msg" id="lockMsg"></div>
+    <div class="keypad" id="keypad">
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+      <button class="act" data-k="clear">Clear</button>
+      <button data-k="0">0</button>
+      <button class="act go" data-k="enter">Enter</button>
+    </div>
+    <div class="lock-foot">Data stays on this device only.<br><span class="mr" style="display:block">माहिती फक्त याच उपकरणावर राहते.</span></div>
+  </div>
+</div>
+
+<!-- ============ APP BAR ============ -->
+<div class="appbar">
+  <div class="brand">
+    <div class="logo">O</div>
+    <div>
+      <b>Origo</b>
+      <span>Client Interview Kiosk · अशिल मुलाखत प्रणाली</span>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <button class="chip-btn" id="langBtn" title="Language / भाषा">🌐 <span id="langLbl">EN+मर</span></button>
+  <button class="chip-btn" id="modeBtn" title="Switch mode">👤 <span id="modeLbl">Intern</span></button>
+  <button class="chip-btn" id="lockBtn" title="Lock the screen / स्क्रीन लॉक करा">🔒</button>
+</div>
+
+<!-- ============ TABS ============ -->
+<div class="tabs" id="tabs">
+  <button class="tab on" data-tab="home"><span class="ic">🏠</span><span class="lbl">Home<span class="mr">मुख्यपृष्ठ</span></span></button>
+  <button class="tab" data-tab="wizard"><span class="ic">🎤</span><span class="lbl">Interview<span class="mr">मुलाखत</span></span></button>
+  <button class="tab" data-tab="matters"><span class="ic">📁</span><span class="lbl">Matters<span class="mr">प्रकरणे</span></span></button>
+  <button class="tab" data-tab="templates"><span class="ic">🧩</span><span class="lbl">Case Types<span class="mr">प्रकार</span></span></button>
+  <button class="tab" data-tab="backup"><span class="ic">💾</span><span class="lbl">Backup<span class="mr">बॅकअप</span></span></button>
+  <button class="tab adv-only hidden" data-tab="advocate"><span class="ic">⚖️</span><span class="lbl">Advocate Desk<span class="mr">वकील डेस्क</span></span></button>
+</div>
+
+<!-- ============ HOME ============ -->
+<div class="wrap" id="tab-home">
+  <div class="hero">
+    <h1>Namaskar 🙏 <span id="heroName"></span></h1>
+    <p id="heroLine">Tap one big button and the app will ask the client only the questions that matter. No empty tabs, no long forms. / एक बटण दाबा — आवश्यक तेच प्रश्न आपोआप येतील.</p>
+  </div>
+
+  <div class="tiles" style="margin-bottom:16px">
+    <button class="tile big" id="tileNew">
+      <span class="ic">🎤</span>
+      <b>Start New Interview</b>
+      <small>नवीन अशिल मुलाखत सुरू करा — step by step</small>
+    </button>
+    <button class="tile" id="tileResume">
+      <span class="ic">⏯️</span>
+      <b>Resume Draft</b>
+      <small id="resumeInfo">अर्धवट राहिलेली मुलाखत पुढे चालू करा</small>
+    </button>
+    <button class="tile" data-goto="matters">
+      <span class="ic">📁</span>
+      <b>Saved Matters</b>
+      <small>जतन केलेली प्रकरणे पहा / शोधा</small>
+    </button>
+    <button class="tile" data-goto="backup">
+      <span class="ic">💾</span>
+      <b>Backup & Export</b>
+      <small>CSV · PDF · JSON बॅकअप</small>
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="sect-head">
+      <h3>Office Snapshot <span class="mr">कार्यालय आढावा</span></h3>
+      <span class="pill tealp" id="todayPill"></span>
+    </div>
+    <div class="stats" id="homeStats"></div>
+  </div>
+
+  <div class="card">
+    <div class="sect-head">
+      <h3>⏰ Follow-ups & Deadlines <span class="mr">पुढील तारखा</span></h3>
+      <button class="btn-ghost" data-goto="matters" style="padding:8px 14px;font-size:.85rem">View all</button>
+    </div>
+    <div id="dueList"></div>
+  </div>
+
+  <div class="card">
+    <h3>📋 How to use this — for new interns <span class="mr">नवीन सहकाऱ्यांसाठी सूचना</span></h3>
+    <ol class="sub" style="margin:0;padding-left:20px;line-height:1.85">
+      <li>Tap <b>Start New Interview</b>. <span class="mr">“नवीन मुलाखत” दाबा.</span></li>
+      <li>Pick the case category and type by tapping the picture cards. <span class="mr">प्रकार निवडा — फक्त बोटाने दाबा.</span></li>
+      <li>Answer whatever the screen shows. Extra questions appear only when needed. <span class="mr">स्क्रीनवर दिसतील तेवढेच प्रश्न विचारा.</span></li>
+      <li>Fields marked <b style="color:var(--danger)">*</b> must be filled to move ahead. <span class="mr">* असलेली माहिती अनिवार्य.</span></li>
+      <li>At the end tap <b>Finish</b> → then <b>Save PDF / CSV / JSON</b>. <span class="mr">शेवटी सेव्ह करा व बॅकअप घ्या.</span></li>
+    </ol>
+  </div>
+</div>
+
+<!-- ============ WIZARD ============ -->
+<div class="wrap hidden" id="tab-wizard">
+  <div class="wiz-head" id="wizHead">
+    <div class="wiz-top">
+      <div>
+        <div class="wiz-step-name" id="wizStepName">—</div>
+        <div class="sub" id="wizStepHint" style="margin:0"></div>
+      </div>
+      <div class="wiz-count" id="wizCount">1 / 1</div>
+    </div>
+    <div class="bar"><i id="wizBar" style="width:0%"></i></div>
+    <div class="dots" id="wizDots"></div>
+  </div>
+  <div id="wizBody"></div>
+</div>
+
+<div class="wiz-foot hidden" id="wizFoot">
+  <div class="inner">
+    <button class="btn-ghost bk" id="wizBack">← Back</button>
+    <span class="autosave" id="wizAuto">✓ auto-saved</span>
+    <button class="btn-primary nx" id="wizNext">Next →</button>
+  </div>
+</div>
+
+<!-- ============ MATTERS ============ -->
+<div class="wrap hidden" id="tab-matters">
+  <div class="card tight">
+    <div class="fields">
+      <label class="f"><span class="lbl">🔍 Search<span class="mr">शोधा</span></span>
+        <input type="text" id="mSearch" placeholder="Name, mobile, case type, title…" /></label>
+      <label class="f"><span class="lbl">Filter by status<span class="mr">स्थिती</span></span>
+        <select id="mFilter">
+          <option value="">All matters</option>
+          <option value="Open">Open</option>
+          <option value="Awaiting documents">Awaiting documents</option>
+          <option value="Drafting">Drafting</option>
+          <option value="Filed">Filed</option>
+          <option value="Closed">Closed</option>
+        </select></label>
+      <label class="f"><span class="lbl">Sort<span class="mr">क्रम</span></span>
+        <select id="mSort">
+          <option value="updated">Recently updated</option>
+          <option value="created">Newest first</option>
+          <option value="name">Client name A→Z</option>
+          <option value="due">Next date (soonest)</option>
+        </select></label>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn-primary" id="mNew">＋ New Interview</button>
+      <button class="btn-secondary" id="mExportCsvAll">⤓ CSV — all matters</button>
+      <button class="btn-secondary" id="mExportPdfAll">🖨 PDF — matter list</button>
+      <span class="pill info" id="mCount" style="margin-left:auto;align-self:center"></span>
+    </div>
+  </div>
+  <div class="mlist" id="mList"></div>
+</div>
+
+<!-- ============ TEMPLATES ============ -->
+<div class="wrap hidden" id="tab-templates">
+  <div class="card">
+    <div class="sect-head">
+      <h2>Case Types & Checklists <span class="mr">प्रकरण प्रकार व कागदपत्रे</span></h2>
+      <div class="row">
+        <button class="btn-primary" id="tNewType">＋ New Case Type</button>
+        <button class="btn-ghost" id="tResetTpl">↺ Restore defaults</button>
+      </div>
+    </div>
+    <p class="sub">Edit the document list and the interview questions for each case type. Changes apply to every new interview. <span class="mr">येथे बदल केल्यास पुढील सर्व मुलाखतींना लागू होतील.</span></p>
+    <div id="tplList"></div>
+  </div>
+</div>
+
+<!-- ============ BACKUP ============ -->
+<div class="wrap hidden" id="tab-backup">
+  <div class="card">
+    <h2>Backup & Export <span class="mr">बॅकअप व निर्यात</span></h2>
+    <p class="sub">Everything is stored on this device only (browser local storage). Take a backup regularly. <span class="mr">सर्व माहिती फक्त याच उपकरणावर साठवली जाते. नियमित बॅकअप घ्या.</span></p>
+    <div class="tiles">
+      <button class="tile" id="bkJson"><span class="ic">🗄️</span><b>Full JSON Backup</b><small>Everything — matters, templates, ledger. Use this to restore.</small></button>
+      <button class="tile" id="bkCsv"><span class="ic">📊</span><b>CSV — All Matters</b><small>Opens in Excel. One row per matter, all fields.</small></button>
+      <button class="tile" id="bkCsvDocs"><span class="ic">📑</span><b>CSV — Document Status</b><small>One row per document across all matters.</small></button>
+      <button class="tile" id="bkRestore"><span class="ic">♻️</span><b>Restore from JSON</b><small>Merge or replace data from a backup file.</small></button>
+    </div>
+    <div class="hr"></div>
+    <h3>Auto-backup reminder <span class="mr">स्वयं-स्मरण</span></h3>
+    <div class="row">
+      <span class="pill" id="lastBkPill"></span>
+      <button class="btn-secondary" id="bkAll">💾 Backup Everything Now (JSON + CSV)</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sect-head"><h3>Activity Ledger <span class="mr">नोंदवही</span></h3>
+      <button class="btn-ghost" id="ledClear" style="padding:8px 14px;font-size:.85rem">Clear</button></div>
+    <div class="led" id="ledList"></div>
+  </div>
+
+  <div class="card">
+    <h3>🔒 Security <span class="mr">सुरक्षा</span></h3>
+    <p class="sub">The screen asks for a PIN when the app opens. Default PIN is <b>2244</b>. <span class="mr">अ‍ॅप उघडताना पिन विचारला जातो. मूळ पिन २२४४.</span></p>
+    <div class="row">
+      <button class="btn-secondary" id="pinChange">✎ Change PIN</button>
+      <button class="btn-ghost" id="pinLockNow">🔒 Lock now</button>
+      <span class="pill info" id="pinState" style="align-self:center"></span>
+    </div>
+    <div class="note warnn" style="margin-top:12px">This PIN keeps a client from reading the screen while it is on the desk. It is <b>not</b> encryption — anyone with the device file can still read the data. Keep the tablet itself locked too.</div>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--danger)">⚠️ Danger zone <span class="mr">धोका क्षेत्र</span></h3>
+    <p class="sub">This deletes everything from this device permanently.</p>
+    <button class="btn-danger" id="wipeBtn">🗑 Erase all data</button>
+  </div>
+</div>
+
+<!-- ============ ADVOCATE DESK ============ -->
+<div class="wrap wide hidden" id="tab-advocate">
+  <div class="card">
+    <div class="sect-head">
+      <h2>Advocate Desk <span class="mr">वकील डेस्क</span></h2>
+      <div class="row">
+        <button class="btn-secondary" id="advCsv">⤓ Export view (CSV)</button>
+        <button class="btn-secondary" id="advPrint">🖨 Print register</button>
+      </div>
+    </div>
+    <p class="sub">Full detail grid of every matter — for drafting notices, cases and documents.</p>
+    <div class="stats" id="advStats" style="margin-bottom:14px"></div>
+    <div class="scrollx">
+      <table class="tbl" id="advTbl"></table>
+    </div>
+  </div>
+  <div class="card" id="advDetailCard">
+    <div class="sect-head"><h3>Selected matter <span class="mr">निवडलेले प्रकरण</span></h3>
+      <div class="row" id="advDetailActions"></div></div>
+    <div id="advDetail"><div class="empty"><span class="ic">👆</span>Tap a row above to see the complete record.</div></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="printArea"></div>
+<input type="file" id="fileIn" accept="application/json,.json" class="hidden" />
+<script>
+/* ================================================================
+   ORIGO — Client Interview Kiosk
+   Single file. Offline. All data in localStorage on this device.
+   ================================================================ */
+'use strict';
+
+const SK = { data:'origoKioskV2', draft:'origoKioskDraftV2', prefs:'origoKioskPrefsV2' };
+const $ = id => document.getElementById(id);
+const qs = (s,r=document) => r.querySelector(s);
+const qsa = (s,r=document) => [...r.querySelectorAll(s)];
+const uid = p => `${p}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,7)}`;
+const nowIso = () => new Date().toISOString();
+const esc = v => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const todayStr = () => new Date().toISOString().slice(0,10);
+
+function fmtDT(iso){ if(!iso) return ''; try{ return new Intl.DateTimeFormat('en-IN',{dateStyle:'medium',timeStyle:'short'}).format(new Date(iso)); }catch{ return iso; } }
+function fmtD(d){ if(!d) return ''; try{ return new Intl.DateTimeFormat('en-IN',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(d)); }catch{ return d; } }
+function daysTo(d){ if(!d) return null; const a=new Date(d); a.setHours(0,0,0,0); const b=new Date(); b.setHours(0,0,0,0); return Math.round((a-b)/86400000); }
+function inr(n){ const v=Number(String(n).replace(/[^0-9.]/g,'')); if(!v||isNaN(v)) return ''; return '₹ '+v.toLocaleString('en-IN'); }
+
+/* ---------------- default case-type library ---------------- */
+function defaultTemplates(){
+  const T = (name, mr, icon, docs, qns) => ({ id:uid('ct'), name, mr, icon, docs, qns });
+  return [
+  { id:uid('cat'), name:'Civil / Property', mr:'दिवाणी / मिळकत', icon:'🏡', types:[
+    T('Specific Performance','करारनाम्याची पूर्तता','📜',
+      ['Agreement before sale (साठेखत)','Payment receipts / bank proof','7/12 extract (latest)','Property card (latest)','Mutation / Ferfar entries','Legal notice sent + postal receipt','Reply received (if any)','Identity proof of client'],
+      [
+        {k:'agrDate', t:'date', q:'Date of agreement before sale', mr:'साठेखताची तारीख', req:true},
+        {k:'totalConsid', t:'money', q:'Total sale consideration agreed', mr:'ठरलेली एकूण रक्कम', req:true},
+        {k:'paidAmt', t:'money', q:'Amount already paid by client', mr:'अशिलाने दिलेली रक्कम'},
+        {k:'payMode', t:'multi', q:'How was the payment made?', mr:'पैसे कसे दिले?', opts:['Cash','Cheque','Bank transfer / RTGS','UPI','Adjustment / set-off','Nothing paid yet'],
+          hint:'Tap all that apply. Bank proof is very useful in court.'},
+        {k:'payProof', t:'choice', q:'Is there written proof of payment?', mr:'पैसे दिल्याचा पुरावा आहे का?', opts:['Yes — receipt','Yes — bank statement','Both','No proof'], req:true},
+        {k:'possGiven', t:'choice', q:'Was possession given to the client?', mr:'ताबा दिला आहे का?', opts:['Yes, full possession','Part possession','Only promised','No'], req:true},
+        {k:'possDate', t:'date', q:'Date possession was handed over', mr:'ताबा दिल्याची तारीख', showIf:{k:'possGiven', in:['Yes, full possession','Part possession']}},
+        {k:'timeLimit', t:'date', q:'Last date fixed in the agreement for sale deed', mr:'खरेदीखतासाठी ठरलेली अंतिम तारीख'},
+        {k:'noticeSent', t:'choice', q:'Was a legal notice sent to the other side?', mr:'कायदेशीर नोटीस पाठवली का?', opts:['Yes','No','Not sure'], req:true},
+        {k:'noticeDate', t:'date', q:'Date of the legal notice', mr:'नोटीसची तारीख', showIf:{k:'noticeSent', eq:'Yes'}},
+        {k:'noticeReply', t:'choice', q:'Did the other side reply?', mr:'समोरील पक्षाने उत्तर दिले का?', opts:['Yes, reply received','No reply','Refused / returned'], showIf:{k:'noticeSent', eq:'Yes'}},
+        {k:'readyWilling', t:'choice', q:'Is the client ready & willing to pay the balance now?', mr:'उर्वरित रक्कम देण्यास अशिल तयार आहे का?', opts:['Yes, immediately','Yes, needs 1-2 months','Needs loan','No'], req:true,
+          hint:'Readiness and willingness is the heart of a specific performance suit. Record the client\'s exact words.'},
+        {k:'thirdParty', t:'choice', q:'Has the property been sold to someone else meanwhile?', mr:'मिळकत दुसऱ्यास विकली आहे का?', opts:['No','Yes','Suspected'], req:true},
+        {k:'thirdPartyDet', t:'textarea', q:'Details of the third-party sale', mr:'त्रयस्थ खरेदीदाराची माहिती', showIf:{k:'thirdParty', in:['Yes','Suspected']}}
+      ]),
+    T('Purchase / Title Search','मिळकत खरेदी / टायटल','🔎',
+      ['7/12 extract (30 years if possible)','Property card','Chain of purchase deeds','Ferfar / Mutation entries','Assessment extract (आकारणी)','Zone certificate','Gat nakasha / map','Search report','NA order (if applicable)','Encumbrance certificate','Bank NOC (if mortgaged)'],
+      [
+        {k:'surveyNo', t:'text', q:'Survey / Gat / CTS number', mr:'सर्व्हे / गट / सिटीएस क्रमांक', req:true},
+        {k:'village', t:'text', q:'Village / City survey office', mr:'गाव / शहर', req:true},
+        {k:'area', t:'text', q:'Area of the property', mr:'क्षेत्रफळ', hint:'e.g. 2 H 15 R, or 1200 sq.ft.'},
+        {k:'landType', t:'choice', q:'Type of land', mr:'जमिनीचा प्रकार', opts:['Agricultural','Non-agricultural (NA)','Residential plot','Flat / Apartment','Commercial','Industrial'], req:true},
+        {k:'naDone', t:'choice', q:'Is NA permission obtained?', mr:'NA परवानगी आहे का?', opts:['Yes','No','Applied','Not required'], showIf:{k:'landType', in:['Agricultural','Non-agricultural (NA)','Residential plot','Industrial','Commercial']}},
+        {k:'seller', t:'text', q:'Name of present recorded owner', mr:'सध्याचा नोंदीत मालक', req:true},
+        {k:'titleFrom', t:'choice', q:'How did the seller get title?', mr:'विक्रेत्यास मालकी कशी मिळाली?', opts:['Purchase','Inheritance / वारसा','Partition / वाटप','Gift / बक्षीस','Government grant','Court decree','Not known'], req:true},
+        {k:'encum', t:'multi', q:'Any encumbrance on the property?', mr:'मिळकतीवर बोजा आहे का?', opts:['None known','Bank / society loan','Tenancy (कुळ)','Court case pending','Government acquisition','Family dispute','Right of way issue']},
+        {k:'possession', t:'choice', q:'Who is in actual physical possession?', mr:'प्रत्यक्ष ताबा कोणाकडे?', opts:['Seller','Client already','Tenant','Third person','Vacant'], req:true},
+        {k:'siteVisit', t:'choice', q:'Has the site been physically inspected?', mr:'जागेची प्रत्यक्ष पाहणी झाली का?', opts:['Yes, by client','Yes, by our office','Not yet'], req:true},
+        {k:'accessRoad', t:'choice', q:'Is there a legal access road?', mr:'रस्ता उपलब्ध आहे का?', opts:['Yes, recorded','Yes, but not recorded','No / disputed','Not checked']},
+        {k:'boundaryDisp', t:'choice', q:'Any boundary or measurement dispute?', mr:'हद्द / मोजणी वाद आहे का?', opts:['No','Yes','Not sure']},
+        {k:'boundaryDet', t:'textarea', q:'Describe the boundary dispute', mr:'हद्द वादाचे स्वरूप', showIf:{k:'boundaryDisp', eq:'Yes'}}
+      ]),
+    T('Injunction / Stay','मनाई हुकूम','🚧',
+      ['7/12 / property card','Purchase deed','Possession proof (light bill, tax receipt)','Photographs of the site','Police complaint copy','Measurement map (मोजणी नकाशा)','Panchnama (if any)'],
+      [
+        {k:'threat', t:'choice', q:'What is the other side threatening to do?', mr:'समोरील पक्ष काय करत आहे?', opts:['Dispossess the client','Construct on the land','Sell / transfer','Cut crops / trees','Block the road','Demolish'], req:true},
+        {k:'threatDate', t:'date', q:'When did this start / when is it expected?', mr:'हे केव्हा सुरू झाले?', req:true},
+        {k:'urgency', t:'choice', q:'How urgent is it?', mr:'निकड किती?', opts:['Today / tomorrow — ex-parte needed','Within a week','Within a month','No immediate threat'], req:true,
+          hint:'If ex-parte, an application under O.39 R.1&2 with affidavit must be ready the same day.'},
+        {k:'possProof', t:'multi', q:'What proves the client\'s possession?', mr:'ताब्याचा पुरावा काय?', opts:['7/12 entry','Electricity bill','Tax receipt','Photographs','Neighbour witnesses','Crop / standing trees','Ration card / address proof']},
+        {k:'policeDone', t:'choice', q:'Was a police complaint filed?', mr:'पोलिस तक्रार दिली का?', opts:['Yes','No','Only oral'], req:true},
+        {k:'policeDate', t:'date', q:'Date of the police complaint', mr:'तक्रारीची तारीख', showIf:{k:'policeDone', eq:'Yes'}}
+      ])
+  ]},
+
+  { id:uid('cat'), name:'Family / Matrimonial', mr:'कौटुंबिक / वैवाहिक', icon:'👨‍👩‍👧', types:[
+    T('Divorce / Matrimonial','घटस्फोट / वैवाहिक','💔',
+      ['Marriage invitation card (पत्रिका)','यादी','Marriage photographs','Marriage registration certificate','Aadhaar of both parties','Marriage expenses details','Salary slip / ITR of husband','Children birth certificates','Medical papers (if cruelty)','Police complaint / NC copy','Earlier case papers'],
+      [
+        {k:'marrDate', t:'date', q:'Date of marriage', mr:'विवाहाची तारीख', req:true},
+        {k:'marrPlace', t:'text', q:'Place of marriage', mr:'विवाहाचे ठिकाण', req:true},
+        {k:'marrReg', t:'choice', q:'Is the marriage registered?', mr:'विवाह नोंदणी झाली आहे का?', opts:['Yes','No','In process'], req:true},
+        {k:'religion', t:'choice', q:'Marriage performed under which law?', mr:'कोणत्या कायद्यानुसार विवाह?', opts:['Hindu Marriage Act','Special Marriage Act','Muslim law','Christian law','Parsi law','Other'], req:true},
+        {k:'cohabit', t:'text', q:'How long did they live together?', mr:'किती काळ एकत्र राहिले?', hint:'e.g. 3 years 4 months'},
+        {k:'sepDate', t:'date', q:'Date of separation', mr:'विभक्त झाल्याची तारीख', req:true,
+          hint:'Critical for limitation and for desertion (2 years) grounds.'},
+        {k:'livingNow', t:'choice', q:'Where is the client living now?', mr:'अशिल सध्या कोठे राहतो/ते?', opts:['Matrimonial home','Parents\' home','Separate rented house','Elsewhere'], req:true},
+        {k:'children', t:'choice', q:'Are there children?', mr:'अपत्ये आहेत का?', opts:['No','1 child','2 children','3 or more'], req:true},
+        {k:'childDet', t:'textarea', q:'Children — name, age, who they live with', mr:'अपत्यांची नावे, वय, कोणाकडे राहतात', showIf:{k:'children', not:'No'}, req:true},
+        {k:'custody', t:'choice', q:'Is custody disputed?', mr:'ताबा वाद आहे का?', opts:['No','Yes — client wants custody','Yes — other side claiming','Only visitation issue'], showIf:{k:'children', not:'No'}},
+        {k:'grounds', t:'multi', q:'Main grounds / allegations', mr:'मुख्य कारणे', opts:['Cruelty (क्रूरता)','Desertion (त्याग)','Adultery','Dowry demand (हुंडा)','Mental illness','Conversion','Mutual consent','Non-consummation','Bigamy'], req:true},
+        {k:'dv', t:'choice', q:'Any physical violence?', mr:'शारीरिक हिंसा झाली का?', opts:['No','Yes — once','Yes — repeated'], req:true},
+        {k:'dvMedical', t:'choice', q:'Is there medical / hospital record of the injuries?', mr:'वैद्यकीय कागदपत्र आहे का?', opts:['Yes','No'], showIf:{k:'dv', in:['Yes — once','Yes — repeated']}},
+        {k:'reliefWanted', t:'multi', q:'What relief does the client want?', mr:'अशिलाला काय हवे आहे?', opts:['Divorce','Restitution of conjugal rights','Judicial separation','Maintenance (125 CrPC / HAMA)','Interim maintenance','Child custody','Protection order (DV Act)','Residence order','Return of streedhan','Only compromise / counselling'], req:true},
+        {k:'streedhan', t:'choice', q:'Is streedhan / jewellery with the other side?', mr:'स्त्रीधन समोरील पक्षाकडे आहे का?', opts:['Yes','No','Partly'], },
+        {k:'streedhanList', t:'textarea', q:'List of streedhan articles with approximate value', mr:'स्त्रीधनाची यादी व अंदाजे किंमत', showIf:{k:'streedhan', in:['Yes','Partly']}},
+        {k:'incomeOther', t:'money', q:'Approximate monthly income of the other side', mr:'समोरील पक्षाचे मासिक उत्पन्न'},
+        {k:'incomeClient', t:'money', q:'Monthly income of the client', mr:'अशिलाचे मासिक उत्पन्न'},
+        {k:'priorCase', t:'multi', q:'Any earlier case / complaint?', mr:'यापूर्वी काही केस / तक्रार?', opts:['None','Police NC','FIR 498A','DV Act case','Maintenance case','Divorce petition','Mediation / counselling']}
+      ]),
+    T('Maintenance','पोटगी','💰',
+      ['Marriage proof','Aadhaar','Salary slip / ITR of opposite party','Bank statements','Proof of expenses (rent, school fees, medical)','Children birth certificates','Evidence of neglect'],
+      [
+        {k:'applicantIs', t:'choice', q:'Who is claiming maintenance?', mr:'पोटगी कोण मागत आहे?', opts:['Wife','Children','Parents','Wife + children'], req:true},
+        {k:'sepDate', t:'date', q:'Since when is the client not being supported?', mr:'केव्हापासून खर्च मिळत नाही?', req:true},
+        {k:'oppIncome', t:'money', q:'Opposite party\'s monthly income (approx.)', mr:'समोरील पक्षाचे मासिक उत्पन्न', req:true},
+        {k:'oppJob', t:'text', q:'Opposite party\'s occupation / employer', mr:'समोरील पक्षाचा व्यवसाय / नोकरी'},
+        {k:'oppAssets', t:'multi', q:'Known assets of the opposite party', mr:'समोरील पक्षाची मालमत्ता', opts:['House / flat','Agricultural land','Shop / business','Vehicle','Bank deposits','Government job','None known']},
+        {k:'clientIncome', t:'money', q:'Client\'s own monthly income', mr:'अशिलाचे स्वतःचे उत्पन्न'},
+        {k:'monthlyNeed', t:'money', q:'Monthly amount being claimed', mr:'मागितलेली मासिक रक्कम', req:true},
+        {k:'expenseBreak', t:'textarea', q:'Break-up of monthly expenses', mr:'मासिक खर्चाचा तपशील', hint:'Rent, food, school fees, medical, travel — a break-up strongly helps the interim application.'},
+        {k:'interim', t:'choice', q:'Is interim maintenance needed urgently?', mr:'तातडीची अंतरिम पोटगी हवी का?', opts:['Yes, urgent','Yes, normal','No'], req:true}
+      ])
+  ]},
+
+  { id:uid('cat'), name:'Cheque / Recovery', mr:'धनादेश / वसुली', icon:'🧾', types:[
+    T('S.138 NI Act — Cheque Bounce','कलम १३८ — चेक बाउन्स','💳',
+      ['Original cheque','Bank return memo','Legal notice copy','Postal receipt + AD card / tracking','Reply of notice (if any)','Proof of debt — invoice / ledger / loan agreement','Bank statement of client','Aadhaar / PAN of client','Account statement showing the loan'],
+      [
+        {k:'chqNo', t:'text', q:'Cheque number', mr:'धनादेश क्रमांक', req:true},
+        {k:'chqAmt', t:'money', q:'Cheque amount', mr:'धनादेशाची रक्कम', req:true},
+        {k:'chqDate', t:'date', q:'Date written on the cheque', mr:'धनादेशावरील तारीख', req:true},
+        {k:'chqBank', t:'text', q:'Bank & branch of the cheque', mr:'बँक व शाखा', req:true},
+        {k:'presentDate', t:'date', q:'Date the cheque was presented', mr:'धनादेश सादर केल्याची तारीख', req:true},
+        {k:'returnDate', t:'date', q:'Date of the bank return memo', mr:'बँक मेमोची तारीख', req:true,
+          hint:'⏳ Notice must be sent within 30 days of THIS date. Limitation runs from here.'},
+        {k:'returnReason', t:'choice', q:'Reason of dishonour in the memo', mr:'न वटण्याचे कारण', opts:['Funds insufficient','Account closed','Payment stopped','Signature differs','Exceeds arrangement','Account frozen','Other'], req:true},
+        {k:'debtNature', t:'choice', q:'Nature of the legally enforceable debt', mr:'कर्ज / देणे कशाचे?', opts:['Hand loan','Goods supplied','Services rendered','Business dues','Rent','Investment return','Other'], req:true},
+        {k:'debtProof', t:'multi', q:'What proves the debt?', mr:'देणे सिद्ध करणारे पुरावे', opts:['Invoices / bills','Ledger account','Written loan agreement','Bank transfer proof','WhatsApp / SMS admission','Witnesses','Only the cheque'], req:true},
+        {k:'noticeSent', t:'choice', q:'Has the legal notice been sent?', mr:'कायदेशीर नोटीस पाठवली का?', opts:['Yes','No — to be sent','Not sure'], req:true},
+        {k:'noticeDate', t:'date', q:'Date of the demand notice', mr:'नोटीस पाठविल्याची तारीख', showIf:{k:'noticeSent', eq:'Yes'}, req:true,
+          hint:'Complaint can be filed only after 15 days from service, and within the next 30 days.'},
+        {k:'noticeMode', t:'multi', q:'How was the notice sent?', mr:'नोटीस कशी पाठवली?', opts:['Registered post AD','Speed post','Courier','Email','Hand delivery'], showIf:{k:'noticeSent', eq:'Yes'}},
+        {k:'noticeServed', t:'choice', q:'Was the notice served?', mr:'नोटीस मिळाली का?', opts:['Yes — AD received','Yes — tracking shows delivered','Returned unclaimed','Not yet','Unknown'], showIf:{k:'noticeSent', eq:'Yes'}},
+        {k:'partPay', t:'choice', q:'Any part payment received after the notice?', mr:'नोटीसनंतर काही रक्कम मिळाली का?', opts:['No','Yes'], req:true},
+        {k:'partPayAmt', t:'money', q:'Part payment amount received', mr:'मिळालेली रक्कम', showIf:{k:'partPay', eq:'Yes'}},
+        {k:'multiChq', t:'choice', q:'How many cheques bounced in this matter?', mr:'किती धनादेश परत आले?', opts:['1','2','3','More than 3'], req:true},
+        {k:'alsoCivil', t:'choice', q:'Should a civil recovery suit also be filed?', mr:'दिवाणी वसुली दावा पण दाखल करायचा का?', opts:['Yes','No','Advocate will decide']}
+      ]),
+    T('Money Recovery Suit','रक्कम वसुली दावा','⚖️',
+      ['Loan agreement / promissory note','Ledger account','Invoices / bills','Bank statements','Correspondence / emails','Acknowledgement of debt','GST records'],
+      [
+        {k:'principal', t:'money', q:'Principal amount due', mr:'मूळ रक्कम', req:true},
+        {k:'interestRate', t:'text', q:'Agreed rate of interest', mr:'ठरलेला व्याजदर', hint:'e.g. 18% p.a. — write "none" if not agreed'},
+        {k:'dueSince', t:'date', q:'Date from which the amount is due', mr:'रक्कम केव्हापासून थकीत?', req:true,
+          hint:'⏳ Limitation for money suits is generally 3 years from this date (or from last acknowledgement).'},
+        {k:'lastAck', t:'date', q:'Date of last payment / written acknowledgement', mr:'शेवटची पावती / मान्यतेची तारीख',
+          hint:'A part payment or written admission restarts limitation. Very important.'},
+        {k:'writtenProof', t:'choice', q:'Is there a written agreement or acknowledgement?', mr:'लेखी करार / मान्यता आहे का?', opts:['Yes — signed document','Yes — only messages/emails','No, oral only'], req:true},
+        {k:'security', t:'choice', q:'Was any security taken?', mr:'तारण घेतले होते का?', opts:['None','Cheques','Property documents','Gold','Guarantor','Post-dated cheques']},
+        {k:'noticeSent', t:'choice', q:'Was a demand notice sent?', mr:'मागणी नोटीस पाठवली का?', opts:['Yes','No'], req:true},
+        {k:'noticeDate', t:'date', q:'Date of demand notice', mr:'नोटीसची तारीख', showIf:{k:'noticeSent', eq:'Yes'}}
+      ])
+  ]},
+
+  { id:uid('cat'), name:'Revenue / Land Records', mr:'महसूल / जमीन नोंदी', icon:'🗺️', types:[
+    T('Revenue Matter','महसूल प्रकरण','📋',
+      ['Mutation extracts (फेरफार)','7/12 extracts','Property card','Purchase deeds','Government orders','Revenue court orders','Tahsildar / SDO order copies','Measurement map','Certified copies of all orders'],
+      [
+        {k:'authority', t:'choice', q:'Which authority is concerned?', mr:'कोणते कार्यालय?', opts:['Talathi','Circle Officer','Tahsildar','Sub-Divisional Officer (SDO)','Collector','Divisional Commissioner','MRT','Land Records / भूमी अभिलेख'], req:true},
+        {k:'disputeType', t:'choice', q:'Nature of the revenue dispute', mr:'वादाचे स्वरूप', opts:['Mutation entry wrongly made','Mutation refused','Partition (वाटप)','Tenancy (कुळ) issue','Boundary / measurement','Encroachment on gairan','Name correction','NA / land use','Succession entry (वारस नोंद)'], req:true},
+        {k:'surveyNo', t:'text', q:'Survey / Gat number(s)', mr:'सर्व्हे / गट क्रमांक', req:true},
+        {k:'village', t:'text', q:'Village & Taluka', mr:'गाव व तालुका', req:true},
+        {k:'ferfarNo', t:'text', q:'Mutation / Ferfar entry number in dispute', mr:'वादातील फेरफार क्रमांक'},
+        {k:'orderPassed', t:'choice', q:'Has any order already been passed?', mr:'आदेश झाला आहे का?', opts:['Yes','No','Only notice received'], req:true},
+        {k:'orderDate', t:'date', q:'Date of the order', mr:'आदेशाची तारीख', showIf:{k:'orderPassed', eq:'Yes'}, req:true,
+          hint:'⏳ Appeal period usually 60 days from the date of the order. Check certified copy date.'},
+        {k:'certCopy', t:'choice', q:'Is a certified copy of the order available?', mr:'प्रमाणित प्रत आहे का?', opts:['Yes','Applied for','No'], showIf:{k:'orderPassed', eq:'Yes'}},
+        {k:'stage', t:'choice', q:'What stage is proposed now?', mr:'आता काय करायचे?', opts:['Fresh application','Appeal','Revision','Review','Writ petition','Only advice'], req:true},
+        {k:'stayNeeded', t:'choice', q:'Is a stay urgently required?', mr:'तातडीची स्थगिती हवी का?', opts:['Yes','No'], req:true}
+      ]),
+    T('Encroachment / Possession','अतिक्रमण / ताबा','🚩',
+      ['7/12 extracts','Property card','Purchase deeds','Mutation extracts','मोजणी नकाशा (measurement map)','Site photographs','Police complaint','Revenue orders','Panchnama'],
+      [
+        {k:'encroacher', t:'text', q:'Who has encroached?', mr:'अतिक्रमण कोणी केले?', req:true},
+        {k:'encroachStart', t:'date', q:'When did the encroachment begin?', mr:'अतिक्रमण केव्हा सुरू झाले?', req:true,
+          hint:'⏳ Possession suits: 12 years limitation. Note the exact date carefully.'},
+        {k:'areaEncroached', t:'text', q:'Approximate area encroached', mr:'अतिक्रमित क्षेत्र', req:true},
+        {k:'measureDone', t:'choice', q:'Has an official measurement (मोजणी) been done?', mr:'शासकीय मोजणी झाली आहे का?', opts:['Yes — map available','Applied for','No'], req:true},
+        {k:'measureDate', t:'date', q:'Date of the measurement', mr:'मोजणीची तारीख', showIf:{k:'measureDone', eq:'Yes — map available'}},
+        {k:'nature', t:'multi', q:'What has the encroacher done?', mr:'अतिक्रमणाचे स्वरूप', opts:['Constructed wall / building','Cultivating the land','Dumped material','Blocked the road','Cut trees','Put up fencing'], req:true},
+        {k:'complaint', t:'multi', q:'Complaints already made', mr:'यापूर्वी केलेल्या तक्रारी', opts:['None','Police complaint','Talathi / Tahsildar','Gram Panchayat','Municipal Corporation','Written notice']},
+        {k:'witnesses', t:'textarea', q:'Neighbours / witnesses who can support', mr:'साक्षीदार / शेजारी'}
+      ])
+  ]},
+
+  { id:uid('cat'), name:'Criminal', mr:'फौजदारी', icon:'🛡️', types:[
+    T('Bail / Anticipatory Bail','जामीन / अटकपूर्व जामीन','🔓',
+      ['FIR copy','Remand papers','Charge-sheet (if filed)','Aadhaar of accused','Surety documents (7/12, salary slip)','Medical papers','Previous bail orders','Case diary extracts (if available)'],
+      [
+        {k:'bailType', t:'choice', q:'Type of bail required', mr:'जामिनाचा प्रकार', opts:['Anticipatory bail (438)','Regular bail (439)','Bail after charge-sheet','Interim bail','Default bail (167(2))'], req:true},
+        {k:'firNo', t:'text', q:'FIR number & police station', mr:'गुन्हा क्रमांक व पोलीस ठाणे', req:true},
+        {k:'firDate', t:'date', q:'Date of the FIR', mr:'गुन्हा दाखल तारीख', req:true},
+        {k:'sections', t:'text', q:'Sections applied', mr:'लागू कलमे', req:true, hint:'e.g. 302, 34 IPC / 115(2), 3(5) BNS'},
+        {k:'arrested', t:'choice', q:'Is the accused arrested?', mr:'आरोपी अटकेत आहे का?', opts:['Yes — in custody','No — absconding fear','No — notice served','Released earlier'], req:true},
+        {k:'arrestDate', t:'date', q:'Date of arrest', mr:'अटकेची तारीख', showIf:{k:'arrested', eq:'Yes — in custody'}, req:true},
+        {k:'custodyType', t:'choice', q:'Type of custody now', mr:'सध्याची कोठडी', opts:['Police custody','Magisterial custody','Judicial custody'], showIf:{k:'arrested', eq:'Yes — in custody'}},
+        {k:'chargesheet', t:'choice', q:'Has the charge-sheet been filed?', mr:'दोषारोपपत्र दाखल झाले का?', opts:['Yes','No','Partly'], req:true},
+        {k:'csDate', t:'date', q:'Date of charge-sheet', mr:'दोषारोपपत्राची तारीख', showIf:{k:'chargesheet', in:['Yes','Partly']}},
+        {k:'priorBail', t:'choice', q:'Any earlier bail application filed?', mr:'यापूर्वी जामीन अर्ज केला का?', opts:['No','Yes — rejected','Yes — withdrawn','Yes — granted then cancelled'], req:true},
+        {k:'priorBailDet', t:'textarea', q:'Details of the earlier bail application', mr:'पूर्वीच्या अर्जाचा तपशील', showIf:{k:'priorBail', not:'No'}, req:true,
+          hint:'Court, application number, date of rejection and the reason — must be disclosed.'},
+        {k:'antecedents', t:'choice', q:'Any previous criminal record?', mr:'पूर्वीचा गुन्हेगारी इतिहास?', opts:['None','1 case','2-3 cases','More than 3'], req:true},
+        {k:'sureties', t:'choice', q:'Are sureties available?', mr:'जामीनदार उपलब्ध आहेत का?', opts:['Yes — 2 ready','Yes — 1 ready','Arranging','No'], req:true},
+        {k:'health', t:'choice', q:'Any medical / age ground?', mr:'आरोग्य / वयाचे कारण?', opts:['No','Senior citizen','Serious illness','Woman with small child','Student / exams']}
+      ]),
+    T('Complaint / FIR Assistance','तक्रार / गुन्हा दाखल','📣',
+      ['Written complaint copy','Acknowledgement receipt','Medical certificate','Photographs / video','Witness details','Call records / messages','CCTV footage details'],
+      [
+        {k:'incidentDate', t:'date', q:'Date of the incident', mr:'घटनेची तारीख', req:true},
+        {k:'incidentPlace', t:'text', q:'Place of the incident', mr:'घटनेचे ठिकाण', req:true},
+        {k:'offenceType', t:'multi', q:'Nature of the offence', mr:'गुन्ह्याचे स्वरूप', opts:['Assault / hurt','Theft','Cheating / fraud','Threat / intimidation','Trespass','Defamation','Cyber / online','Sexual offence','Property damage'], req:true},
+        {k:'firFiled', t:'choice', q:'Has the FIR been registered?', mr:'गुन्हा दाखल झाला का?', opts:['Yes','No — police refusing','Only NC recorded','Complaint given, awaiting'], req:true},
+        {k:'firNo', t:'text', q:'FIR / NC number', mr:'गुन्हा / NC क्रमांक', showIf:{k:'firFiled', in:['Yes','Only NC recorded']}},
+        {k:'nextStep', t:'choice', q:'What action is proposed?', mr:'पुढील कार्यवाही', opts:['Application to SP / DCP','156(3) application to Magistrate','Private complaint (200 CrPC)','Follow up with police','Only advice'], showIf:{k:'firFiled', in:['No — police refusing','Only NC recorded','Complaint given, awaiting']}, req:true},
+        {k:'injury', t:'choice', q:'Was anyone injured?', mr:'कोणी जखमी झाले का?', opts:['No','Yes — minor','Yes — serious','Death'], req:true},
+        {k:'medical', t:'choice', q:'Is there a medical certificate?', mr:'वैद्यकीय दाखला आहे का?', opts:['Yes','No','Treatment taken, no certificate'], showIf:{k:'injury', not:'No'}},
+        {k:'evidence', t:'multi', q:'Available evidence', mr:'उपलब्ध पुरावे', opts:['Eye witnesses','CCTV','Photographs','Video','Audio recording','WhatsApp / SMS','Call recording','Documents','None']}
+      ])
+  ]},
+
+  { id:uid('cat'), name:'Consumer / Service', mr:'ग्राहक / सेवा', icon:'🛒', types:[
+    T('Consumer Complaint','ग्राहक तक्रार','🧑‍⚖️',
+      ['Purchase invoice / bill','Warranty card','Payment proof','Correspondence with the company','Service reports','Photographs of the defect','Legal notice + postal receipt'],
+      [
+        {k:'oppName', t:'text', q:'Name of the company / service provider', mr:'कंपनी / सेवा पुरवठादाराचे नाव', req:true},
+        {k:'purchaseDate', t:'date', q:'Date of purchase / service', mr:'खरेदी / सेवेची तारीख', req:true,
+          hint:'⏳ Consumer complaint must be filed within 2 years of the cause of action.'},
+        {k:'amountPaid', t:'money', q:'Amount paid', mr:'दिलेली रक्कम', req:true},
+        {k:'issueType', t:'choice', q:'Nature of the grievance', mr:'तक्रारीचे स्वरूप', opts:['Defective goods','Deficiency in service','Unfair trade practice','Non-delivery','Overcharging','Insurance claim rejected','Builder delay / possession','Medical negligence'], req:true},
+        {k:'warranty', t:'choice', q:'Is it within warranty / guarantee?', mr:'वॉरंटी कालावधीत आहे का?', opts:['Yes','No','Not applicable'], },
+        {k:'complained', t:'choice', q:'Was a complaint made to the company?', mr:'कंपनीकडे तक्रार केली का?', opts:['Yes — written','Yes — only phone/email','No'], req:true},
+        {k:'complaintRef', t:'text', q:'Complaint / ticket reference number', mr:'तक्रार क्रमांक', showIf:{k:'complained', not:'No'}},
+        {k:'reliefWanted', t:'multi', q:'Relief claimed', mr:'मागणी', opts:['Refund','Replacement','Repair','Compensation','Litigation cost','Interest'], req:true},
+        {k:'compAmt', t:'money', q:'Compensation amount claimed', mr:'नुकसानभरपाई रक्कम'}
+      ])
+  ]},
+
+  { id:uid('cat'), name:'Documentation / Drafting', mr:'दस्तऐवज / मसुदा', icon:'✍️', types:[
+    T('Agreement / Deed Drafting','करारनामा / दस्त तयार करणे','📝',
+      ['Identity proof of all parties','PAN cards','Property documents','7/12 / property card','Previous deed','Photographs of parties','Witness identity proof','Stamp duty calculation'],
+      [
+        {k:'docType', t:'choice', q:'Which document is to be drafted?', mr:'कोणता दस्त तयार करायचा?', opts:['Sale deed (खरेदीखत)','Agreement to sell (साठेखत)','Gift deed (बक्षीसपत्र)','Partition deed (वाटप)','Lease / rent agreement','Power of attorney','Will (मृत्युपत्र)','Partnership deed','Affidavit','Release deed (हक्कसोड)','MoU / contract'], req:true},
+        {k:'parties', t:'choice', q:'How many parties?', mr:'किती पक्ष?', opts:['2','3','4','More than 4'], req:true},
+        {k:'consideration', t:'money', q:'Consideration / value of the document', mr:'दस्ताची किंमत'},
+        {k:'regReq', t:'choice', q:'Is registration required?', mr:'नोंदणी आवश्यक आहे का?', opts:['Yes — compulsory','Optional','No','Advocate will decide'], req:true},
+        {k:'stampReady', t:'choice', q:'Is stamp duty already calculated / paid?', mr:'मुद्रांक शुल्क भरले आहे का?', opts:['Paid','Calculated, not paid','Not yet'], showIf:{k:'regReq', in:['Yes — compulsory','Optional']}},
+        {k:'urgentBy', t:'date', q:'By when is the draft needed?', mr:'मसुदा केव्हा हवा?', req:true},
+        {k:'specialTerms', t:'textarea', q:'Any special terms the client wants included', mr:'विशेष अटी'}
+      ]),
+    T('Legal Notice','कायदेशीर नोटीस','📨',
+      ['Client identity proof','Supporting documents of the claim','Address proof of the other side','Earlier correspondence','Payment / transaction proof'],
+      [
+        {k:'noticeFor', t:'choice', q:'Notice is for', mr:'नोटीस कशासाठी?', opts:['Money recovery','Cheque bounce','Property possession','Breach of contract','Defamation','Tenant eviction','Employment dues','Matrimonial','Consumer grievance','Other'], req:true},
+        {k:'claimAmt', t:'money', q:'Amount claimed (if any)', mr:'मागणी रक्कम'},
+        {k:'oppAddrKnown', t:'choice', q:'Is the exact address of the other side known?', mr:'समोरील पक्षाचा पत्ता माहीत आहे का?', opts:['Yes, confirmed','Approximate','No'], req:true},
+        {k:'complyDays', t:'choice', q:'Compliance period to be given', mr:'मुदत किती द्यायची?', opts:['7 days','15 days','30 days','As per law'], req:true},
+        {k:'sendMode', t:'multi', q:'Mode of sending', mr:'पाठविण्याची पद्धत', opts:['Registered post AD','Speed post','Courier','Email','Hand delivery'], req:true},
+        {k:'demandSummary', t:'textarea', q:'What exactly is being demanded?', mr:'नेमकी मागणी काय?', req:true}
+      ])
+  ]},
+
+  { id:uid('cat'), name:'Other / General', mr:'इतर / सर्वसाधारण', icon:'📌', types:[
+    T('General Consultation','सर्वसाधारण सल्ला','💬',
+      ['Any documents brought by the client','Identity proof','Related correspondence'],
+      [
+        {k:'topic', t:'text', q:'What is the client\'s question about?', mr:'अशिलाचा प्रश्न कशाबद्दल आहे?', req:true},
+        {k:'urgency', t:'choice', q:'How urgent is it?', mr:'निकड किती?', opts:['Immediate','This week','This month','No urgency'], req:true},
+        {k:'anyDeadline', t:'date', q:'Any date / deadline already fixed', mr:'ठरलेली तारीख असल्यास'},
+        {k:'priorAdvice', t:'choice', q:'Has the client consulted anyone else before?', mr:'यापूर्वी कोणाचा सल्ला घेतला का?', opts:['No','Yes — another advocate','Yes — non-lawyer'], req:true}
+      ])
+  ]}
+  ];
+}
+
+function defaultState(){
+  return {
+    v:2,
+    office:{ name:'', advocate:'', place:'' },
+    templates: defaultTemplates(),
+    matters: [],
+    ledger: [{ id:uid('l'), action:'Application ready', detail:'Default case-type library loaded.', time:nowIso() }],
+    lastBackup:null
+  };
+}
+
+let S = load();
+function load(){
+  try{
+    const raw = localStorage.getItem(SK.data);
+    if(!raw) return defaultState();
+    const p = JSON.parse(raw);
+    if(!p || !Array.isArray(p.templates) || !p.templates.length) return defaultState();
+    p.matters = Array.isArray(p.matters)?p.matters:[];
+    p.ledger  = Array.isArray(p.ledger)?p.ledger:[];
+    p.office  = p.office || {name:'',advocate:'',place:''};
+    return p;
+  }catch{ return defaultState(); }
+}
+function save(){ try{ localStorage.setItem(SK.data, JSON.stringify(S)); }catch(e){ toast('Storage full — please export a backup and clear old matters.','bad'); } }
+function led(action, detail){
+  S.ledger.unshift({id:uid('l'),action,detail,time:nowIso()});
+  S.ledger = S.ledger.slice(0,400); save(); if(cur.tab==='backup') renderLedger();
+}
+
+let P = (()=>{ try{ return JSON.parse(localStorage.getItem(SK.prefs))||{lang:'both',mode:'intern'}; }catch{ return {lang:'both',mode:'intern'}; } })();
+function savePrefs(){ localStorage.setItem(SK.prefs, JSON.stringify(P)); }
+</script>
+<script>
+/* ================================================================
+   WIZARD ENGINE — conditional, tap-first interview flow
+   ================================================================ */
+
+let cur = { tab:'home', matterId:null, step:0, data:{}, docs:[], catId:null, typeId:null, editing:false };
+
+const PRIORITY = [
+  {v:'Normal', ic:'🟢', mr:'सामान्य'},
+  {v:'Urgent', ic:'🟠', mr:'तातडीचे'},
+  {v:'Very Urgent', ic:'🔴', mr:'अत्यंत तातडीचे'},
+  {v:'High Stakes', ic:'⭐', mr:'महत्त्वाचे'}
+];
+const STATUS = ['Open','Awaiting documents','Drafting','Filed','Closed'];
+const HOW_CAME = ['Reference / ओळखीने','Walk-in / प्रत्यक्ष','Phone call','Old client','Online','Court referral'];
+const CLIENT_ROLE = [
+  {v:'Plaintiff / Complainant', mr:'वादी / फिर्यादी', ic:'🙋'},
+  {v:'Defendant / Accused', mr:'प्रतिवादी / आरोपी', ic:'🛡️'},
+  {v:'Applicant', mr:'अर्जदार', ic:'📄'},
+  {v:'Respondent', mr:'गैरअर्जदार', ic:'↩️'},
+  {v:'Appellant', mr:'अपीलकर्ता', ic:'⬆️'},
+  {v:'Only consultation', mr:'फक्त सल्ला', ic:'💬'}
+];
+const FORUMS = ['Civil Judge Junior Division','Civil Judge Senior Division','District Court','Family Court','JMFC Court','Sessions Court','High Court','Tahsildar','SDO','Collector','Consumer Commission','Labour Court','Registrar','Police Station','MRT','Not decided yet'];
+
+/* -------- helper to read/write answers -------- */
+const A = (k, v) => { if(v===undefined) return cur.data[k]; cur.data[k]=v; scheduleDraft(); };
+
+/* -------- conditional visibility -------- */
+function visible(q){
+  if(!q.showIf) return true;
+  const c = q.showIf, val = cur.data[c.k];
+  if(c.eq !== undefined) return val === c.eq;
+  if(c.not !== undefined) return val !== undefined && val !== '' && val !== c.not;
+  if(c.in) return c.in.includes(val);
+  if(c.has) return Array.isArray(val) && val.includes(c.has);
+  if(c.any) return Array.isArray(val) ? val.some(x=>c.any.includes(x)) : c.any.includes(val);
+  if(c.truthy) return !!val && (!Array.isArray(val) || val.length>0);
+  return true;
+}
+
+function getCat(){ return S.templates.find(c=>c.id===cur.catId) || null; }
+function getType(){ const c=getCat(); return c ? (c.types.find(t=>t.id===cur.typeId)||null) : null; }
+
+/* ================= STEP DEFINITIONS ================= */
+/* Split case questions into pages of ~8, never separating a conditional
+   child question from the parent whose answer reveals it. */
+function chunkQns(qns, target=8){
+  const pages=[]; let page=[];
+  const idx = {}; qns.forEach((q,i)=>idx[q.k]=i);
+  qns.forEach((q,i)=>{
+    const parentInPage = q.showIf && page.some(p=>p.k===q.showIf.k);
+    if(page.length>=target && !parentInPage){ pages.push(page); page=[]; }
+    page.push(q);
+  });
+  if(page.length){
+    // avoid a lonely tail page of 1-2 questions
+    if(pages.length && page.length<=2) pages[pages.length-1].push(...page);
+    else pages.push(page);
+  }
+  return pages;
+}
+
+function steps(){
+  const t = getType();
+  const specific = t ? (t.qns||[]) : [];
+  const pages = chunkQns(specific);
+  const list = [
+    { id:'cat',   name:'Case Category', mr:'प्रकरणाचा विभाग', ic:'🗂️', hint:'Tap the area of law', build:stepCategory, valid:()=> cur.catId?null:'Please tap a category.' },
+    { id:'type',  name:'Case Type',     mr:'प्रकरणाचा प्रकार', ic:'🧩', hint:'Tap the exact matter', build:stepType, valid:()=> cur.typeId?null:'Please tap a case type.' },
+    { id:'client',name:'Client Details',mr:'अशिलाची माहिती', ic:'🙋', hint:'Who is sitting in front of you', build:stepClient, valid:validClient },
+    { id:'party', name:'Other Side',    mr:'समोरील पक्ष',     ic:'⚔️', hint:'Opposite party & forum', build:stepParty, valid:()=>null }
+  ];
+  const MRN = ['','१','२','३','४','५','६'];
+  pages.forEach((pg, i) => {
+    const many = pages.length > 1;
+    list.push({
+      id: 'sp'+(i+1),
+      name: t.name + (many ? ` — Part ${i+1}` : ''),
+      mr: (t.mr||'') + (many ? ` — भाग ${MRN[i+1]||(i+1)}` : ''),
+      ic: t.icon||'❓',
+      hint: many ? `Case specific questions ${i+1} of ${pages.length}` : 'Case specific questions',
+      build: () => stepSpecific(pg),
+      valid: () => validQns(pg)
+    });
+  });
+  list.push(
+    { id:'facts', name:'Facts & Relief',  mr:'हकीकत व मागणी',  ic:'📖', hint:'Story in the client\'s own words', build:stepFacts, valid:validFacts },
+    { id:'docs',  name:'Documents',       mr:'कागदपत्रे',       ic:'📎', hint:'Tap what the client has brought', build:stepDocs, valid:()=>null },
+    { id:'fee',   name:'Fee & Follow-up', mr:'फी व पुढील तारीख',ic:'💼', hint:'Money and next steps', build:stepFee, valid:()=>null },
+    { id:'review',name:'Review & Save',   mr:'तपासा व जतन करा', ic:'✅', hint:'Check everything, then save', build:stepReview, valid:()=>null }
+  );
+  return list;
+}
+
+/* ================= FIELD RENDERERS ================= */
+function lbl(en, mr){ return `<span class="lbl"><span class="en-t">${esc(en)}</span>${mr?`<span class="mr">${esc(mr)}</span>`:''}</span>`; }
+
+function qWrap(inner, {q, mr, hint, req, key}={}){
+  return `<div class="q ${req?'req':''}" data-qk="${esc(key||'')}">
+    ${q?`<span class="qlab"><span class="en-t">${esc(q)}</span>${mr?`<span class="mr">${esc(mr)}</span>`:''}</span>`:''}
+    ${hint?`<div class="qhint">${hint}</div>`:''}
+    ${inner}</div>`;
+}
+
+function optCards(key, opts, {multi=false, narrow=false, icons={}, subs={}}={}){
+  const val = cur.data[key];
+  const sel = multi ? (Array.isArray(val)?val:[]) : val;
+  return `<div class="opts ${narrow?'narrow':''}" data-opts="${esc(key)}" data-multi="${multi?1:0}">` +
+    opts.map(o=>{
+      const v = typeof o==='string'? o : o.v;
+      const ic = typeof o==='object'&&o.ic ? o.ic : (icons[v]||'');
+      const sub = typeof o==='object'&&o.mr ? o.mr : (subs[v]||'');
+      const on = multi ? sel.includes(v) : sel===v;
+      return `<button type="button" class="opt ${on?'on':''}" data-v="${esc(v)}">
+        ${ic?`<span class="oic">${ic}</span>`:''}
+        <span class="otx">${esc(v)}${sub?`<small>${esc(sub)}</small>`:''}</span>
+        <span class="tick">✓</span></button>`;
+    }).join('') + `</div>`;
+}
+
+function inputField(key, type, ph, extra=''){
+  const v = cur.data[key] ?? '';
+  if(type==='textarea') return `<textarea data-in="${esc(key)}" placeholder="${esc(ph||'')}" ${extra}>${esc(v)}</textarea>`;
+  const t = type==='money'?'text':type;
+  const im = type==='money'?'inputmode="decimal"':(type==='tel'?'inputmode="tel"':'');
+  return `<input type="${t}" ${im} data-in="${esc(key)}" value="${esc(v)}" placeholder="${esc(ph||'')}" ${extra} />`;
+}
+
+function selField(key, opts, ph){
+  const v = cur.data[key] ?? '';
+  return `<select data-in="${esc(key)}"><option value="">${esc(ph||'— select —')}</option>` +
+    opts.map(o=>{const x=typeof o==='string'?o:o.v; return `<option value="${esc(x)}" ${v===x?'selected':''}>${esc(x)}</option>`;}).join('') + `</select>`;
+}
+
+function suggests(key, arr){
+  return `<div class="inline-suggest" data-sug="${esc(key)}">` + arr.map(a=>`<button type="button" class="sug" data-v="${esc(a)}">${esc(a)}</button>`).join('') + `</div>`;
+}
+
+/* ================= STEPS ================= */
+function stepCategory(){
+  return `<div class="card">
+    <h2>What kind of matter is this? <span class="mr">हे कोणत्या प्रकारचे प्रकरण आहे?</span></h2>
+    <p class="sub">Just tap. Everything after this changes automatically. <span class="mr">फक्त दाबा — पुढील प्रश्न आपोआप बदलतील.</span></p>
+    <div class="opts" data-catpick>
+      ${S.templates.map(c=>`<button type="button" class="opt ${cur.catId===c.id?'on':''}" data-cat="${esc(c.id)}">
+        <span class="oic">${c.icon||'📁'}</span>
+        <span class="otx">${esc(c.name)}<small>${esc(c.mr||'')} · ${c.types.length} types</small></span>
+        <span class="tick">✓</span></button>`).join('')}
+    </div>
+    <div class="hr"></div>
+    <button class="btn-ghost" id="wAddCat">＋ Add a new category <span class="mr">नवीन विभाग</span></button>
+  </div>`;
+}
+
+function stepType(){
+  const c = getCat(); if(!c) return `<div class="empty">Pick a category first.</div>`;
+  return `<div class="card">
+    <h2>${esc(c.name)} — which one? <span class="mr">कोणता प्रकार?</span></h2>
+    <p class="sub">The document list and the questions are set by this choice. <span class="mr">यावरून कागदपत्रांची यादी व प्रश्न ठरतील.</span></p>
+    <div class="opts" data-typepick>
+      ${c.types.map(t=>`<button type="button" class="opt ${cur.typeId===t.id?'on':''}" data-type="${esc(t.id)}">
+        <span class="oic">${t.icon||'📄'}</span>
+        <span class="otx">${esc(t.name)}<small>${esc(t.mr||'')} · ${(t.docs||[]).length} docs · ${(t.qns||[]).length} questions</small></span>
+        <span class="tick">✓</span></button>`).join('')}
+    </div>
+    <div class="hr"></div>
+    <button class="btn-ghost" id="wAddType">＋ Add a case type in ${esc(c.name)}</button>
+  </div>`;
+}
+
+function validClient(){
+  if(!(cur.data.clientName||'').trim()) return 'Client name is required. / अशिलाचे नाव आवश्यक.';
+  const ph = (cur.data.clientPhone||'').replace(/\D/g,'');
+  if(!ph) return 'Mobile number is required. / मोबाईल क्रमांक आवश्यक.';
+  if(ph.length<10) return 'Mobile number looks short — please check.';
+  if(!cur.data.clientRole) return 'Please tap the client\'s role in the case.';
+  return null;
+}
+
+function stepClient(){
+  const dup = findDuplicate();
+  return `<div class="card">
+    <h2>Client details <span class="mr">अशिलाची माहिती</span></h2>
+    ${dup?`<div class="note warnn" style="margin-bottom:12px">⚠️ A matter for <b>${esc(dup.data.clientName)}</b> (${esc(dup.data.clientPhone||'')}) already exists — ${esc(dup.data.typeName||'')}, saved ${fmtD(dup.created)}. <button class="btn-warn" style="padding:6px 12px;min-height:auto;font-size:.83rem" onclick="openMatter('${dup.id}')">Open it</button></div>`:''}
+    <div class="fields">
+      <label class="f">${lbl('Client full name *','अशिलाचे पूर्ण नाव')}${inputField('clientName','text','Surname Name Father\'s name')}</label>
+      <label class="f">${lbl('Mobile number *','मोबाईल क्रमांक')}${inputField('clientPhone','tel','10 digit mobile')}</label>
+      <label class="f">${lbl('Alternate number','पर्यायी क्रमांक')}${inputField('clientAlt','tel','Optional')}</label>
+      <label class="f">${lbl('Email','ईमेल')}${inputField('clientEmail','email','Optional')}</label>
+      <label class="f">${lbl('Age','वय')}${inputField('clientAge','number','Optional')}</label>
+      <label class="f">${lbl('Occupation','व्यवसाय')}${inputField('clientOcc','text','Farmer, Business, Service…')}
+        ${suggests('clientOcc',['Farmer','Business','Service','Housewife','Student','Retired','Labour'])}</label>
+    </div>
+    <div class="hr"></div>
+    ${qWrap(optCards('clientRole', CLIENT_ROLE), {q:'Client is the…', mr:'अशिलाची भूमिका', req:true})}
+    <label class="f" style="margin-bottom:14px">${lbl('Full postal address','संपूर्ण पत्ता')}${inputField('clientAddress','textarea','House / village / taluka / district / pin')}</label>
+    ${qWrap(optCards('idProof', ['Aadhaar','PAN','Voter ID','Driving Licence','Passport','Not brought'], {multi:true, narrow:true}), {q:'Identity proof brought today', mr:'आणलेले ओळखपत्र'})}
+    ${qWrap(optCards('howCame', HOW_CAME, {narrow:true}), {q:'How did the client reach us?', mr:'अशिल कसा आला?'})}
+    ${(cur.data.howCame||'').startsWith('Reference') ? qWrap(inputField('refBy','text','Name of the person who referred'), {q:'Referred by', mr:'कोणाच्या ओळखीने?'}) : ''}
+  </div>`;
+}
+
+function stepParty(){
+  const role = cur.data.clientRole||'';
+  const consultOnly = role==='Only consultation';
+  return `<div class="card">
+    <h2>Other side & forum <span class="mr">समोरील पक्ष व न्यायालय</span></h2>
+    ${consultOnly?`<div class="note" style="margin-bottom:12px">Client came only for advice — fill only if there is a known opposite party.</div>`:''}
+    ${qWrap(optCards('oppCount', ['1','2','3','4 or more','Not applicable'], {narrow:true}), {q:'How many persons on the other side?', mr:'समोरील पक्षात किती जण?'})}
+    ${cur.data.oppCount && cur.data.oppCount!=='Not applicable' ? `
+      <label class="f" style="margin-bottom:12px">${lbl('Names of the opposite party','समोरील पक्षाची नावे')}${inputField('oppNames','textarea','One name per line, with relation if any')}</label>
+      <label class="f" style="margin-bottom:12px">${lbl('Address of the opposite party','समोरील पक्षाचा पत्ता')}${inputField('oppAddress','textarea','As complete as possible — needed for notice/summons')}</label>
+      ${qWrap(optCards('oppRelation', ['Stranger','Relative','Neighbour','Business partner','Employer / Employee','Spouse / In-laws','Tenant / Landlord','Government body'], {narrow:true}), {q:'Relationship with the client', mr:'अशिलाशी नाते'})}
+      ${qWrap(optCards('oppAdvocate', ['Not known','Yes, has an advocate','No advocate yet'], {narrow:true}), {q:'Does the other side already have an advocate?', mr:'समोरील पक्षाकडे वकील आहे का?'})}
+    `:''}
+    <div class="hr"></div>
+    <div class="fields">
+      <label class="f">${lbl('Court / Authority / Forum','न्यायालय / कार्यालय')}${selField('forum', FORUMS, '— select forum —')}</label>
+      <label class="f">${lbl('Place / Taluka of the forum','ठिकाण / तालुका')}${inputField('forumPlace','text','e.g. Nashik')}</label>
+      <label class="f">${lbl('Existing case number (if any)','चालू केस क्रमांक')}${inputField('caseNo','text','e.g. RCS 123/2024')}</label>
+    </div>
+    ${qWrap(optCards('caseStage', ['Not filed yet','Filed — first date awaited','Appearance / written statement','Evidence','Arguments','Judgment awaited','Appeal stage','Execution'], {narrow:true}), {q:'Present stage of the matter', mr:'प्रकरणाची सद्यस्थिती'})}
+  </div>`;
+}
+
+function validQns(list){
+  for(const q of list){
+    if(!visible(q) || !q.req) continue;
+    const v = cur.data[q.k];
+    if(v===undefined || v===null || v==='' || (Array.isArray(v)&&!v.length))
+      return `Please answer: “${q.q}”`;
+  }
+  return null;
+}
+
+function stepSpecific(list){
+  const t = getType();
+  const body = list.filter(visible).map(q=>{
+    let inner='';
+    if(q.t==='choice')        inner = optCards(q.k, q.opts||[], {narrow:(q.opts||[]).every(o=>String(o).length<18)});
+    else if(q.t==='multi')    inner = optCards(q.k, q.opts||[], {multi:true, narrow:(q.opts||[]).every(o=>String(o).length<18)});
+    else if(q.t==='textarea') inner = inputField(q.k,'textarea','Type the client\'s answer…');
+    else if(q.t==='date')     inner = inputField(q.k,'date','');
+    else if(q.t==='money')    inner = inputField(q.k,'money','Amount in ₹');
+    else if(q.t==='number')   inner = inputField(q.k,'number','');
+    else                      inner = inputField(q.k,'text','Type here…');
+    let hint = q.hint||'';
+    if(q.t==='money' && cur.data[q.k]) hint = (hint?hint+' · ':'') + '<b>'+esc(inr(cur.data[q.k]))+'</b>';
+    if(q.t==='date' && cur.data[q.k]){ const d=daysTo(cur.data[q.k]); if(d!==null) hint=(hint?hint+' · ':'')+'<b>'+(d===0?'today':(d<0?Math.abs(d)+' days ago':'in '+d+' days'))+'</b>'; }
+    return qWrap(inner, {q:q.q, mr:q.mr, hint, req:q.req, key:q.k});
+  }).join('');
+  return `<div class="card">
+    <h2>${esc(t? t.name:'Case questions')} <span class="mr">${esc(t&&t.mr?t.mr:'')}</span></h2>
+    <p class="sub">Only relevant questions are shown. More may appear based on the answers. <span class="mr">उत्तरानुसार आणखी प्रश्न येऊ शकतात.</span></p>
+    ${body || '<div class="empty">No further questions for these answers. Tap Next.</div>'}
+  </div>`;
+}
+
+function validFacts(){
+  if(!(cur.data.factsSummary||'').trim()) return 'Please write at least a short summary of what happened.';
+  return null;
+}
+
+function stepFacts(){
+  return `<div class="card">
+    <h2>Facts & relief <span class="mr">हकीकत व मागणी</span></h2>
+    <p class="sub">Write in the client's own words. This becomes the base of the draft. <span class="mr">अशिलाच्या शब्दांत लिहा — यावरूनच मसुदा तयार होईल.</span></p>
+    ${qWrap(inputField('factsSummary','textarea','What exactly happened? Start from the beginning…'), {q:'What happened? (short facts) *', mr:'नेमके काय घडले?', req:true,
+      hint:'Ask: <b>Who? What? When? Where? How much?</b> — cover all five before moving on.'})}
+    ${qWrap(inputField('timeline','textarea','01-01-2024 — agreement signed\n15-03-2024 — payment made\n…'), {q:'Date-wise timeline', mr:'तारीखवार घटनाक्रम',
+      hint:'One line per event with a date. Saves hours at drafting stage.'})}
+    ${qWrap(inputField('reliefSought','textarea','What does the client want the court to order?'), {q:'Relief the client wants', mr:'अशिलाची मागणी'})}
+    ${qWrap(optCards('interimNeeded', ['No','Stay / injunction','Interim maintenance','Custody','Attachment before judgment','Protection order','Bail'], {narrow:true}), {q:'Any interim/urgent relief needed?', mr:'तातडीची मागणी?'})}
+    ${qWrap(inputField('witnesses','textarea','Name — what they know — contact'), {q:'Witnesses / persons who know the facts', mr:'साक्षीदार'})}
+    ${qWrap(optCards('priorProceeding', ['None','Police complaint','Notice sent','Case already filed','Mediation','Panchayat / settlement attempt','Appeal from an order'], {multi:true, narrow:true}), {q:'Anything already done in this matter?', mr:'यापूर्वी काही कार्यवाही?'})}
+    ${qWrap(inputField('weakPoints','textarea','Delay, missing documents, admissions, adverse entries…'), {q:'Weak points / risks (internal)', mr:'कमकुवत बाजू — अंतर्गत',
+      hint:'🔒 Private — never printed on the client copy.'})}
+    ${qWrap(inputField('limitationNote','textarea','e.g. Cause of action 10-01-2024, 3 years limitation, expires 09-01-2027'), {q:'Limitation check', mr:'मुदतीचा विचार',
+      hint:'⏳ Always note the last date to file. Ask the advocate if unsure.'})}
+  </div>`;
+}
+
+function stepDocs(){
+  const rec = cur.docs.filter(d=>d.status==='received').length;
+  const pen = cur.docs.filter(d=>d.status==='pending').length;
+  const na  = cur.docs.filter(d=>d.status==='na').length;
+  return `<div class="card">
+    <div class="sect-head">
+      <h2>Documents <span class="mr">कागदपत्रे</span></h2>
+      <div class="row">
+        <span class="pill ok">${rec} received</span>
+        <span class="pill warn">${pen} pending</span>
+        ${na?`<span class="pill">${na} N/A</span>`:''}
+      </div>
+    </div>
+    <p class="sub">Tap <b>Got it</b> for every paper the client handed over today. <span class="mr">आज मिळालेल्या प्रत्येक कागदावर “Got it” दाबा.</span></p>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn-ok" id="dAllRec">✓ All received</button>
+      <button class="btn-warn" id="dAllPen">↺ All pending</button>
+    </div>
+    <div id="docWrap">${cur.docs.map(docRow).join('')||'<div class="empty">No documents in this template. Add below.</div>'}</div>
+    <div class="hr"></div>
+    <div class="row">
+      <input type="text" id="newDocName" class="grow" placeholder="Add another document the client must bring…" />
+      <button class="btn-secondary" id="addDocBtn">＋ Add</button>
+    </div>
+    <div class="hr"></div>
+    ${qWrap(inputField('docDeadline','date',''), {q:'By when must the pending documents be brought?', mr:'उर्वरित कागदपत्रे केव्हापर्यंत?',
+      hint:'This date is printed on the client\'s slip.'})}
+  </div>`;
+}
+
+function docRow(d){
+  return `<div class="doc ${d.status==='received'?'recv':''} ${d.status==='na'?'na':''}" data-doc="${esc(d.id)}">
+    <span class="dn">${esc(d.name)}${d.note?`<small>${esc(d.note)}</small>`:''}</span>
+    <div class="seg">
+      <button type="button" data-v="received" class="${d.status==='received'?'on':''}">✓ Got it</button>
+      <button type="button" data-v="pending"  class="${d.status==='pending'?'on':''}">⏳ Pending</button>
+      <button type="button" data-v="na"       class="${d.status==='na'?'on':''}">— N/A</button>
+    </div>
+    <button type="button" class="x" data-del="${esc(d.id)}" title="Remove">✕</button>
+    <input type="text" class="doc-note" data-note="${esc(d.id)}" value="${esc(d.note||'')}" placeholder="Note — original/xerox, pages, who will bring…" />
+  </div>`;
+}
+
+function stepFee(){
+  const fq = Number(String(cur.data.feeQuoted||'').replace(/[^0-9.]/g,''))||0;
+  const fa = Number(String(cur.data.feeAdvance||'').replace(/[^0-9.]/g,''))||0;
+  const bal = fq-fa;
+  return `<div class="card">
+    <h2>Fee, expenses & next step <span class="mr">फी, खर्च व पुढील पाऊल</span></h2>
+    ${qWrap(optCards('feeStatus', ['Fee discussed','Fee not discussed yet','Free / legal aid','Advocate will decide'], {narrow:true}), {q:'Fee position', mr:'फी बाबत'})}
+    ${cur.data.feeStatus==='Fee discussed' ? `
+    <div class="fields" style="margin-bottom:12px">
+      <label class="f">${lbl('Total fee quoted','ठरलेली एकूण फी')}${inputField('feeQuoted','money','₹')}</label>
+      <label class="f">${lbl('Advance received today','आज मिळालेली आगाऊ रक्कम')}${inputField('feeAdvance','money','₹')}</label>
+      <label class="f">${lbl('Balance','शिल्लक')}<input type="text" value="${bal>0?inr(bal):(fq?'₹ 0':'')}" readonly style="background:#f6faf9" /></label>
+      <label class="f">${lbl('Payment mode','रक्कम कशी मिळाली')}${selField('feeMode',['Cash','UPI','Bank transfer','Cheque','Not paid'],'— select —')}</label>
+    </div>` : ''}
+    ${qWrap(inputField('expenses','textarea','Court fee, stamp, xerox, search, travel, notice charges…'), {q:'Expenses to be borne by client', mr:'अशिलाने करावयाचा खर्च'})}
+    <div class="hr"></div>
+    <div class="fields">
+      <label class="f">${lbl('Next appointment / follow-up date','पुढील भेटीची तारीख')}${inputField('nextDate','date','')}</label>
+      <label class="f">${lbl('Important date in the matter','प्रकरणातील महत्त्वाची तारीख')}${inputField('keyDate','date','')}</label>
+      <label class="f">${lbl('Matter status','स्थिती')}${selField('status', STATUS, 'Open')}</label>
+    </div>
+    <div style="height:12px"></div>
+    ${qWrap(optCards('priority', PRIORITY, {narrow:true}), {q:'Priority', mr:'प्राधान्य'})}
+    ${qWrap(optCards('nextAction', ['Collect pending documents','Draft legal notice','Draft plaint / application','File the case','Search / title report','Client to confirm','Advocate meeting needed','Nothing — advice given'], {multi:true}), {q:'What happens next in the office?', mr:'कार्यालयात पुढील काम'})}
+    ${qWrap(inputField('internNotes','textarea','Anything the advocate should know before meeting this client'), {q:'Note for the advocate (private)', mr:'वकिलांसाठी टीप — खाजगी',
+      hint:'🔒 Private. Not printed on the client copy.'})}
+    <div class="fields" style="margin-top:12px">
+      <label class="f">${lbl('Interview taken by','मुलाखत घेणारे')}${inputField('takenBy','text','Your name')}
+        ${suggests('takenBy',[S.office.advocate||'Advocate','Intern'].filter(Boolean))}</label>
+      <label class="f">${lbl('Date of interview','मुलाखतीची तारीख')}${inputField('intvDate','date','')}</label>
+    </div>
+  </div>`;
+}
+
+/* ================= REVIEW ================= */
+function reviewGroups(){
+  const t = getType(), c = getCat();
+  const g = [];
+  g.push({t:'Case', mr:'प्रकरण', rows:[
+    ['Category', c?c.name:'', 'cat'], ['Case type', t?t.name:'', 'type'],
+    ['Client role', cur.data.clientRole,'client'], ['Forum', cur.data.forum,'party'],
+    ['Case number', cur.data.caseNo,'party'], ['Stage', cur.data.caseStage,'party']
+  ]});
+  g.push({t:'Client', mr:'अशिल', rows:[
+    ['Name', cur.data.clientName,'client'], ['Mobile', cur.data.clientPhone,'client'],
+    ['Alternate', cur.data.clientAlt,'client'], ['Email', cur.data.clientEmail,'client'],
+    ['Age', cur.data.clientAge,'client'], ['Occupation', cur.data.clientOcc,'client'],
+    ['Address', cur.data.clientAddress,'client'], ['ID proof', arr(cur.data.idProof),'client'],
+    ['Came via', cur.data.howCame,'client'], ['Referred by', cur.data.refBy,'client']
+  ]});
+  g.push({t:'Other side', mr:'समोरील पक्ष', rows:[
+    ['Number of parties', cur.data.oppCount,'party'], ['Names', cur.data.oppNames,'party'],
+    ['Address', cur.data.oppAddress,'party'], ['Relationship', cur.data.oppRelation,'party'],
+    ['Has advocate', cur.data.oppAdvocate,'party']
+  ]});
+  if(t && (t.qns||[]).length){
+    const pages = chunkQns(t.qns||[]);
+    const pageOf = k => { const i = pages.findIndex(p=>p.some(q=>q.k===k)); return 'sp'+(i<0?1:i+1); };
+    const rows = (t.qns||[]).filter(visible).map(q=>[q.q, fmtAns(q, cur.data[q.k]), pageOf(q.k)]);
+    g.push({t:t.name+' — details', mr:t.mr||'', rows});
+  }
+  g.push({t:'Facts & relief', mr:'हकीकत', rows:[
+    ['Short facts', cur.data.factsSummary,'facts'], ['Timeline', cur.data.timeline,'facts'],
+    ['Relief sought', cur.data.reliefSought,'facts'], ['Interim relief', cur.data.interimNeeded,'facts'],
+    ['Witnesses', cur.data.witnesses,'facts'], ['Already done', arr(cur.data.priorProceeding),'facts'],
+    ['Limitation', cur.data.limitationNote,'facts'], ['🔒 Weak points', cur.data.weakPoints,'facts']
+  ]});
+  g.push({t:'Fee & follow-up', mr:'फी व पुढील तारीख', rows:[
+    ['Fee position', cur.data.feeStatus,'fee'], ['Fee quoted', inr(cur.data.feeQuoted),'fee'],
+    ['Advance received', inr(cur.data.feeAdvance),'fee'], ['Payment mode', cur.data.feeMode,'fee'],
+    ['Expenses', cur.data.expenses,'fee'], ['Next date', fmtD(cur.data.nextDate),'fee'],
+    ['Key date', fmtD(cur.data.keyDate),'fee'], ['Status', cur.data.status,'fee'],
+    ['Priority', cur.data.priority,'fee'], ['Next action', arr(cur.data.nextAction),'fee'],
+    ['🔒 Note for advocate', cur.data.internNotes,'fee'],
+    ['Taken by', cur.data.takenBy,'fee'], ['Interview date', fmtD(cur.data.intvDate),'fee']
+  ]});
+  return g;
+}
+function arr(v){ return Array.isArray(v)? v.join(', ') : (v||''); }
+function fmtAns(q,v){
+  if(v===undefined||v===null||v==='') return '';
+  if(Array.isArray(v)) return v.join(', ');
+  if(q.t==='date') return fmtD(v);
+  if(q.t==='money') return inr(v);
+  return String(v);
+}
+
+function stepReview(){
+  const rec = cur.docs.filter(d=>d.status==='received');
+  const pen = cur.docs.filter(d=>d.status==='pending');
+  const miss = missingRequired();
+  return `<div class="card">
+    <div class="sect-head">
+      <h2>Review <span class="mr">तपासा</span></h2>
+      <span class="pill ${miss.length?'warn':'ok'}">${miss.length? miss.length+' item(s) still blank' : 'All required answers filled'}</span>
+    </div>
+    ${miss.length?`<div class="note warnn" style="margin-bottom:12px"><b>Still blank:</b> ${miss.map(m=>esc(m.q)).join(' · ')}<br><small>You can still save — fill them later from the Matters tab.</small></div>`:''}
+    <div class="rev">
+      ${reviewGroups().map(g=>{
+        const filled = g.rows.filter(r=>String(r[1]||'').trim()).length;
+        return `<details class="rgrp" ${filled?'open':''}>
+          <summary><span>${esc(g.t)} ${g.mr?`<span class="mr" style="display:inline">${esc(g.mr)}</span>`:''} <span class="pill tealp" style="margin-left:6px">${filled}/${g.rows.length}</span></span></summary>
+          <div class="rbody">${g.rows.map(r=>`<div class="rrow"><div class="k">${esc(r[0])}</div>
+            <div class="v ${String(r[1]||'').trim()?'':'blank'}">${String(r[1]||'').trim()?esc(r[1]):'— not answered —'}
+            ${r[2]?`<button class="edit" data-jump="${esc(r[2])}">edit</button>`:''}</div></div>`).join('')}</div>
+        </details>`;
+      }).join('')}
+      <details class="rgrp" open><summary><span>Documents <span class="mr" style="display:inline">कागदपत्रे</span> <span class="pill tealp" style="margin-left:6px">${rec.length}/${cur.docs.length}</span></span></summary>
+        <div class="rbody">
+          <div class="rrow"><div class="k">✅ Received</div><div class="v ${rec.length?'':'blank'}">${rec.length?esc(rec.map(d=>d.name).join(', ')):'— none —'}</div></div>
+          <div class="rrow"><div class="k">⏳ Pending</div><div class="v ${pen.length?'':'blank'}">${pen.length?esc(pen.map(d=>d.name).join(', ')):'— none —'}</div></div>
+          <div class="rrow"><div class="k">Bring by</div><div class="v ${cur.data.docDeadline?'':'blank'}">${cur.data.docDeadline?fmtD(cur.data.docDeadline):'— not set —'}</div></div>
+        </div></details>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Save & backup <span class="mr">जतन व बॅकअप</span></h3>
+    <p class="sub">Save first, then take the backups. Everything stays on this device.</p>
+    <div class="tiles">
+      <button class="tile big" id="rvSave"><span class="ic">💾</span><b>Save Matter</b><small>प्रकरण जतन करा — do this first</small></button>
+      <button class="tile" id="rvClient"><span class="ic">🖨️</span><b>Print Client Slip</b><small>Document list for the client (no private notes)</small></button>
+      <button class="tile" id="rvPdf"><span class="ic">📄</span><b>Full PDF (print)</b><small>Complete record incl. Marathi text</small></button>
+      <button class="tile" id="rvPdfFile"><span class="ic">⤓</span><b>PDF file download</b><small>Direct .pdf — English fields only</small></button>
+      <button class="tile" id="rvCsv"><span class="ic">📊</span><b>CSV of this matter</b><small>Opens in Excel</small></button>
+      <button class="tile" id="rvJson"><span class="ic">🗄️</span><b>JSON of this matter</b><small>For re-import / drafting tools</small></button>
+    </div>
+  </div>`;
+}
+
+function missingRequired(){
+  const out=[]; const t=getType();
+  if(!(cur.data.factsSummary||'').trim()) out.push({q:'Short facts'});
+  (t?t.qns:[]).forEach(q=>{ if(visible(q)&&q.req){ const v=cur.data[q.k]; if(v===undefined||v===''||(Array.isArray(v)&&!v.length)) out.push({q:q.q}); }});
+  return out;
+}
+
+function findDuplicate(){
+  const ph = (cur.data.clientPhone||'').replace(/\D/g,'');
+  if(ph.length<10) return null;
+  return S.matters.find(m=>m.id!==cur.matterId && (m.data.clientPhone||'').replace(/\D/g,'')===ph) || null;
+}
+</script>
+<script>
+/* ================================================================
+   RENDER + EVENTS
+   ================================================================ */
+function toast(msg, kind='good', ms=2600){
+  const d=document.createElement('div');
+  d.className='toast '+kind;
+  d.innerHTML=`<span>${kind==='bad'?'⚠️':kind==='warn'?'⚠️':'✓'}</span><span>${esc(msg)}</span>`;
+  $('toast').appendChild(d);
+  setTimeout(()=>{ d.style.opacity='0'; d.style.transition='opacity .3s'; setTimeout(()=>d.remove(),320); }, ms);
+}
+
+function go(tab){
+  cur.tab = tab;
+  qsa('.tab').forEach(b=>b.classList.toggle('on', b.dataset.tab===tab));
+  ['home','wizard','matters','templates','backup','advocate'].forEach(t=>$('tab-'+t).classList.toggle('hidden', t!==tab));
+  $('wizFoot').classList.toggle('hidden', tab!=='wizard');
+  window.scrollTo({top:0,behavior:'instant'});
+  if(tab==='home') renderHome();
+  if(tab==='matters') renderMatters();
+  if(tab==='templates') renderTemplates();
+  if(tab==='backup'){ renderLedger(); renderBackupInfo(); renderPinState(); }
+  if(tab==='advocate') renderAdvocate();
+  if(tab==='wizard') renderWizard();
+}
+
+/* ---------------- HOME ---------------- */
+function renderHome(){
+  $('heroName').textContent = S.office.advocate ? S.office.advocate : '';
+  const d = new Date();
+  $('todayPill').textContent = new Intl.DateTimeFormat('en-IN',{weekday:'long',day:'2-digit',month:'long'}).format(d);
+  const ms=S.matters;
+  const pend = ms.reduce((a,m)=>a+(m.docs||[]).filter(x=>x.status==='pending').length,0);
+  const thisMonth = ms.filter(m=>new Date(m.created).getMonth()===d.getMonth()&&new Date(m.created).getFullYear()===d.getFullYear()).length;
+  const open = ms.filter(m=>(m.data.status||'Open')!=='Closed').length;
+  const fees = ms.reduce((a,m)=>a+(Number(String(m.data.feeAdvance||'').replace(/[^0-9.]/g,''))||0),0);
+  $('homeStats').innerHTML = [
+    ['📁',ms.length,'Total matters','एकूण प्रकरणे'],
+    ['🟢',open,'Open matters','चालू प्रकरणे'],
+    ['🗓️',thisMonth,'New this month','या महिन्यात'],
+    ['⏳',pend,'Documents pending','प्रलंबित कागद'],
+    ['💰',fees?inr(fees):'—','Advance received','आगाऊ रक्कम']
+  ].map(s=>`<div class="stat"><span class="n">${s[0]} ${esc(String(s[1]))}</span><span class="l">${s[2]}<span class="mr">${s[3]}</span></span></div>`).join('');
+
+  const due = ms.filter(m=>m.data.nextDate||m.data.keyDate||m.data.docDeadline)
+    .map(m=>{ const ds=[m.data.nextDate,m.data.keyDate,m.data.docDeadline].filter(Boolean).map(daysTo);
+      return {m, d:Math.min(...ds)}; })
+    .filter(x=>x.d!==null && x.d<=30).sort((a,b)=>a.d-b.d).slice(0,6);
+  $('dueList').innerHTML = due.length ? `<div class="mlist">${due.map(x=>{
+    const cls = x.d<0?'red':x.d<=2?'warn':'info';
+    const lab = x.d<0?`${Math.abs(x.d)}d overdue`:x.d===0?'TODAY':x.d===1?'Tomorrow':`in ${x.d} days`;
+    return `<div class="mcard"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+      <div><h4>${esc(x.m.data.clientName||'—')}</h4><div class="mmeta"><span>${esc(x.m.data.typeName||'')}</span><span>📞 ${esc(x.m.data.clientPhone||'')}</span></div></div>
+      <div class="row"><span class="pill ${cls}">${lab}</span><button class="btn-ghost" style="padding:9px 14px" onclick="openMatter('${x.m.id}')">Open</button></div>
+    </div></div>`; }).join('')}` : `<div class="empty"><span class="ic">🌿</span>No follow-up dates in the next 30 days.<span class="mr">पुढील ३० दिवसांत कोणतीही तारीख नाही.</span></div>`;
+
+  const dr = localStorage.getItem(SK.draft);
+  if(dr){ try{ const j=JSON.parse(dr); $('resumeInfo').innerHTML = j.data && j.data.clientName ? `<b>${esc(j.data.clientName)}</b> — saved ${fmtDT(j.at)}` : `Draft saved ${fmtDT(j.at)}`; }catch{} }
+  else $('resumeInfo').textContent='No draft saved. / अर्धवट मुलाखत नाही.';
+}
+
+/* ---------------- WIZARD ---------------- */
+function renderWizard(){
+  const st = steps();
+  cur.step = Math.max(0, Math.min(cur.step, st.length-1));
+  const s = st[cur.step];
+  $('wizStepName').innerHTML = `${s.ic} ${esc(s.name)}<span class="mr" style="display:inline;margin-left:6px">${esc(s.mr||'')}</span>`;
+  $('wizStepHint').textContent = s.hint||'';
+  $('wizCount').textContent = `Step ${cur.step+1} / ${st.length}`;
+  $('wizBar').style.width = Math.round(((cur.step)/(st.length-1))*100)+'%';
+  $('wizDots').innerHTML = st.map((x,i)=>`<button class="dot ${i===cur.step?'on':(i<cur.step?'done':'')}" data-step="${i}">${i<cur.step?'✓ ':''}${esc(x.name.length>22?x.name.slice(0,20)+'…':x.name)}</button>`).join('');
+  const body=$('wizBody'); body.innerHTML = s.build();
+  body.querySelectorAll('.card').forEach(c=>c.classList.add('new'));
+  $('wizBack').disabled = cur.step===0;
+  $('wizBack').style.opacity = cur.step===0?'.4':'1';
+  $('wizNext').innerHTML = cur.step===st.length-1 ? '✅ Done' : 'Next →';
+  const dots=$('wizDots'); const on=dots.querySelector('.dot.on'); if(on) on.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+}
+
+function wizGoto(i){ const st=steps(); cur.step=Math.max(0,Math.min(i,st.length-1)); renderWizard(); window.scrollTo({top:0,behavior:'smooth'}); }
+function jumpToStepId(id){ const st=steps(); const i=st.findIndex(x=>x.id===id); if(i>=0) wizGoto(i); }
+
+function wizNext(){
+  const st=steps(), s=st[cur.step];
+  const err = s.valid ? s.valid() : null;
+  if(err){
+    toast(err,'bad',3600);
+    const q = qsa('#wizBody .q.req').find(el=>{
+      const k=el.dataset.qk; if(!k) return false;
+      const v=cur.data[k]; return v===undefined||v===''||(Array.isArray(v)&&!v.length);
+    });
+    if(q){ q.classList.add('err'); q.scrollIntoView({block:'center',behavior:'smooth'}); setTimeout(()=>q.classList.remove('err'),2600); }
+    return;
+  }
+  if(cur.step===st.length-1){ saveMatter(true); return; }
+  wizGoto(cur.step+1);
+}
+
+function newInterview(){
+  cur = { tab:'wizard', matterId:null, step:0,
+    data:{ intvDate:todayStr(), status:'Open', priority:'Normal', takenBy:P.lastTakenBy||'' },
+    docs:[], catId:null, typeId:null, editing:false };
+  localStorage.removeItem(SK.draft);
+  go('wizard');
+}
+
+function pickCat(id){
+  if(cur.catId===id) return;
+  cur.catId=id; cur.typeId=null;
+  const c=getCat(); cur.data.catName=c?c.name:'';
+  renderWizard(); setTimeout(()=>wizGoto(1),180);
+}
+function pickType(id){
+  cur.typeId=id; const t=getType();
+  cur.data.typeName = t?t.name:'';
+  cur.data.typeMr = t?(t.mr||''):'';
+  cur.docs = (t?t.docs:[]).map(n=>({id:uid('d'), name:n, status:'pending', note:''}));
+  scheduleDraft(); renderWizard(); setTimeout(()=>wizGoto(2),180);
+}
+
+/* ---------------- draft autosave ---------------- */
+let draftT=null;
+function scheduleDraft(){
+  clearTimeout(draftT);
+  draftT=setTimeout(()=>{
+    if(!cur.catId && !(cur.data.clientName||'').trim()) return;
+    localStorage.setItem(SK.draft, JSON.stringify({at:nowIso(), matterId:cur.matterId, step:cur.step, data:cur.data, docs:cur.docs, catId:cur.catId, typeId:cur.typeId}));
+    const a=$('wizAuto'); if(a){ a.textContent='✓ saved '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); }
+  }, 500);
+}
+function resumeDraft(){
+  const raw=localStorage.getItem(SK.draft);
+  if(!raw){ toast('No saved draft found.','warn'); return; }
+  try{
+    const j=JSON.parse(raw);
+    cur = {tab:'wizard', matterId:j.matterId||null, step:j.step||0, data:j.data||{}, docs:j.docs||[], catId:j.catId||null, typeId:j.typeId||null, editing:!!j.matterId};
+    go('wizard'); toast('Draft restored.');
+  }catch{ toast('Draft is damaged.','bad'); }
+}
+
+/* ---------------- save matter ---------------- */
+function saveMatter(finish){
+  if(!(cur.data.clientName||'').trim()){ toast('Client name is required before saving.','bad'); jumpToStepId('client'); return; }
+  const t=getType(), c=getCat();
+  cur.data.catName = c?c.name:''; cur.data.typeName = t?t.name:'';
+  if(cur.data.takenBy){ P.lastTakenBy=cur.data.takenBy; savePrefs(); }
+  let m;
+  if(cur.matterId && (m=S.matters.find(x=>x.id===cur.matterId))){
+    m.data={...cur.data}; m.docs=JSON.parse(JSON.stringify(cur.docs)); m.catId=cur.catId; m.typeId=cur.typeId; m.updated=nowIso();
+    led('Matter updated', `${cur.data.clientName} — ${cur.data.typeName||''}`);
+    toast('Matter updated. / प्रकरण अद्ययावत झाले.');
+  }else{
+    m={ id:uid('m'), ref:nextRef(), created:nowIso(), updated:nowIso(), catId:cur.catId, typeId:cur.typeId,
+        data:{...cur.data}, docs:JSON.parse(JSON.stringify(cur.docs)) };
+    S.matters.unshift(m); cur.matterId=m.id;
+    led('Matter saved', `${cur.data.clientName} — ${cur.data.typeName||''} (${m.ref})`);
+    toast('Saved ✓  Ref '+m.ref);
+  }
+  save(); localStorage.removeItem(SK.draft);
+  if(finish) renderWizard();
+  return m;
+}
+function nextRef(){
+  const y=new Date().getFullYear();
+  const n=S.matters.filter(m=>m.ref&&m.ref.endsWith('/'+y)).length+1;
+  return `ORG/${String(n).padStart(3,'0')}/${y}`;
+}
+
+function openMatter(id){
+  const m=S.matters.find(x=>x.id===id); if(!m) return;
+  cur={tab:'wizard', matterId:m.id, step:0, data:JSON.parse(JSON.stringify(m.data)),
+       docs:JSON.parse(JSON.stringify(m.docs||[])), catId:m.catId, typeId:m.typeId, editing:true};
+  go('wizard'); const st=steps(); wizGoto(st.length-1);
+  toast('Opened '+(m.ref||'')+' — '+(m.data.clientName||''));
+}
+
+/* ---------------- MATTERS ---------------- */
+function filteredMatters(){
+  const q=($('mSearch').value||'').toLowerCase().trim();
+  const f=$('mFilter').value, sort=$('mSort').value;
+  let list=S.matters.filter(m=>{
+    if(f && (m.data.status||'Open')!==f) return false;
+    if(!q) return true;
+    return JSON.stringify([m.ref,m.data.clientName,m.data.clientPhone,m.data.typeName,m.data.catName,m.data.oppNames,m.data.caseNo,m.data.factsSummary]).toLowerCase().includes(q);
+  });
+  const num=d=>d?new Date(d).getTime():Infinity;
+  if(sort==='created') list.sort((a,b)=>new Date(b.created)-new Date(a.created));
+  else if(sort==='name') list.sort((a,b)=>(a.data.clientName||'').localeCompare(b.data.clientName||''));
+  else if(sort==='due') list.sort((a,b)=>num(a.data.nextDate)-num(b.data.nextDate));
+  else list.sort((a,b)=>new Date(b.updated||b.created)-new Date(a.updated||a.created));
+  return list;
+}
+function renderMatters(){
+  const list=filteredMatters();
+  $('mCount').textContent = `${list.length} of ${S.matters.length}`;
+  $('mList').innerHTML = list.length ? list.map(m=>{
+    const rec=(m.docs||[]).filter(d=>d.status==='received').length, tot=(m.docs||[]).length;
+    const pen=(m.docs||[]).filter(d=>d.status==='pending').length;
+    const dd=daysTo(m.data.nextDate);
+    const pr=PRIORITY.find(p=>p.v===m.data.priority);
+    return `<div class="mcard">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:start">
+        <div style="min-width:0">
+          <h4>${pr?pr.ic+' ':''}${esc(m.data.clientName||'—')}</h4>
+          <div class="mmeta">
+            <span>🏷️ ${esc(m.ref||'')}</span>
+            <span>${esc(m.data.catName||'')} › <b>${esc(m.data.typeName||'')}</b></span>
+            <span>📞 ${esc(m.data.clientPhone||'—')}</span>
+            ${m.data.forum?`<span>⚖️ ${esc(m.data.forum)}</span>`:''}
+            <span>🕒 ${fmtDT(m.updated||m.created)}</span>
+          </div>
+        </div>
+        <div class="row" style="gap:6px">
+          <span class="pill ${(m.data.status||'Open')==='Closed'?'':'tealp'}">${esc(m.data.status||'Open')}</span>
+          ${tot?`<span class="pill ${pen?'warn':'ok'}">📎 ${rec}/${tot}</span>`:''}
+          ${dd!==null?`<span class="pill ${dd<0?'red':dd<=2?'warn':'info'}">📅 ${dd<0?Math.abs(dd)+'d overdue':dd===0?'today':dd===1?'tomorrow':'in '+dd+'d'}</span>`:''}
+        </div>
+      </div>
+      ${m.data.factsSummary?`<div class="sub" style="margin:0;max-height:42px;overflow:hidden">${esc(m.data.factsSummary.slice(0,180))}${m.data.factsSummary.length>180?'…':''}</div>`:''}
+      <div class="row">
+        <button class="btn-primary" style="padding:10px 16px" onclick="openMatter('${m.id}')">Open / Edit</button>
+        <button class="btn-ghost" style="padding:10px 14px" onclick="printOne('${m.id}','client')">🖨 Client slip</button>
+        <button class="btn-ghost" style="padding:10px 14px" onclick="printOne('${m.id}','full')">📄 Full PDF</button>
+        <button class="btn-ghost" style="padding:10px 14px" onclick="pdfFileOne('${m.id}')">⤓ .pdf</button>
+        <button class="btn-ghost" style="padding:10px 14px" onclick="csvOne('${m.id}')">📊 CSV</button>
+        <button class="btn-ghost" style="padding:10px 14px" onclick="jsonOne('${m.id}')">🗄 JSON</button>
+        <button class="btn-ghost" style="padding:10px 14px" onclick="dupMatter('${m.id}')">⧉ Duplicate</button>
+        <button class="btn-danger" style="padding:10px 14px;margin-left:auto" onclick="delMatter('${m.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('') : `<div class="empty"><span class="ic">📂</span>No matters found.<span class="mr">कोणतेही प्रकरण सापडले नाही.</span><br><br><button class="btn-primary" onclick="newInterview()">＋ Start the first interview</button></div>`;
+}
+function delMatter(id){
+  const m=S.matters.find(x=>x.id===id); if(!m) return;
+  confirmBox(`Delete “${m.data.clientName}”?`, 'This cannot be undone. Export a backup first if unsure. / ही कृती परत करता येणार नाही.', ()=>{
+    S.matters=S.matters.filter(x=>x.id!==id); save(); led('Matter deleted', m.data.clientName+' ('+(m.ref||'')+')');
+    renderMatters(); toast('Deleted.','warn');
+  });
+}
+function dupMatter(id){
+  const m=S.matters.find(x=>x.id===id); if(!m) return;
+  cur={tab:'wizard',matterId:null,step:0,data:{...JSON.parse(JSON.stringify(m.data)), clientName:'', clientPhone:'', intvDate:todayStr()},
+       docs:(m.docs||[]).map(d=>({...d,id:uid('d'),status:'pending',note:''})), catId:m.catId, typeId:m.typeId, editing:false};
+  go('wizard'); wizGoto(2); toast('Copied case setup — enter the new client.');
+}
+
+/* ---------------- TEMPLATES ---------------- */
+function renderTemplates(){
+  $('tplList').innerHTML = S.templates.map(c=>`
+    <details class="rgrp" style="margin-bottom:10px">
+      <summary><span>${c.icon||'📁'} ${esc(c.name)} <span class="mr" style="display:inline">${esc(c.mr||'')}</span> <span class="pill tealp" style="margin-left:6px">${c.types.length}</span></span></summary>
+      <div class="rbody">
+        <div class="row" style="margin:8px 0 12px">
+          <button class="btn-secondary" style="padding:9px 14px" onclick="addType('${c.id}')">＋ Case type here</button>
+          <button class="btn-ghost" style="padding:9px 14px" onclick="renameCat('${c.id}')">✎ Rename category</button>
+          <button class="btn-danger" style="padding:9px 14px" onclick="delCat('${c.id}')">🗑 Delete category</button>
+        </div>
+        ${c.types.map(t=>`<div class="mcard" style="margin-bottom:9px">
+          <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
+            <h4>${t.icon||'📄'} ${esc(t.name)} <span class="mr" style="display:inline;font-size:.85rem">${esc(t.mr||'')}</span></h4>
+            <div class="row" style="gap:6px">
+              <span class="pill info">${(t.docs||[]).length} docs</span>
+              <span class="pill tealp">${(t.qns||[]).length} questions</span>
+            </div>
+          </div>
+          <div class="sub" style="margin:0">${esc((t.docs||[]).join(' · ')||'No documents listed')}</div>
+          <div class="row">
+            <button class="btn-secondary" style="padding:9px 14px" onclick="editDocs('${c.id}','${t.id}')">📎 Edit document list</button>
+            <button class="btn-ghost" style="padding:9px 14px" onclick="startWith('${c.id}','${t.id}')">🎤 Start interview</button>
+            <button class="btn-ghost" style="padding:9px 14px" onclick="renameType('${c.id}','${t.id}')">✎ Rename</button>
+            <button class="btn-danger" style="padding:9px 14px;margin-left:auto" onclick="delType('${c.id}','${t.id}')">🗑</button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </details>`).join('');
+}
+function startWith(cid,tid){ newInterview(); cur.catId=cid; pickType(tid); }
+
+function modal(html){
+  const d=document.createElement('div'); d.className='mask';
+  d.innerHTML=`<div class="modal">${html}</div>`;
+  d.addEventListener('click', e=>{ if(e.target===d) d.remove(); });
+  document.body.appendChild(d); return d;
+}
+function confirmBox(title, body, onYes){
+  const d=modal(`<h3>${esc(title)}</h3><p class="sub">${esc(body)}</p>
+    <div class="row end"><button class="btn-ghost" data-no>Cancel</button><button class="btn-danger" data-yes>Yes, continue</button></div>`);
+  d.querySelector('[data-no]').onclick=()=>d.remove();
+  d.querySelector('[data-yes]').onclick=()=>{ d.remove(); onYes(); };
+}
+function promptBox(title, fields, onOk){
+  const d=modal(`<h3>${esc(title)}</h3><div class="fields">${fields.map(f=>`<label class="f"><span class="lbl">${esc(f.l)}</span>
+    ${f.type==='textarea'?`<textarea data-k="${f.k}" placeholder="${esc(f.ph||'')}">${esc(f.v||'')}</textarea>`
+    :`<input type="text" data-k="${f.k}" value="${esc(f.v||'')}" placeholder="${esc(f.ph||'')}" />`}</label>`).join('')}</div>
+    <div class="row end" style="margin-top:14px"><button class="btn-ghost" data-no>Cancel</button><button class="btn-primary" data-yes>Save</button></div>`);
+  d.querySelector('[data-no]').onclick=()=>d.remove();
+  d.querySelector('[data-yes]').onclick=()=>{ const o={}; d.querySelectorAll('[data-k]').forEach(i=>o[i.dataset.k]=i.value.trim()); d.remove(); onOk(o); };
+  setTimeout(()=>{const i=d.querySelector('input,textarea'); if(i) i.focus();},60);
+}
+function newCategory(cb){
+  promptBox('New category / नवीन विभाग',[{k:'name',l:'Category name (English)',ph:'e.g. Labour / Service'},{k:'mr',l:'Marathi name',ph:'e.g. कामगार'},{k:'icon',l:'Icon (one emoji)',ph:'🏭',v:'📁'}],o=>{
+    if(!o.name) return toast('Name required','bad');
+    const c={id:uid('cat'),name:o.name,mr:o.mr,icon:o.icon||'📁',types:[]};
+    S.templates.push(c); save(); led('Category created',o.name); toast('Category added.'); cb&&cb(c);
+    if(cur.tab==='templates') renderTemplates(); if(cur.tab==='wizard') renderWizard();
+  });
+}
+function addType(cid, cb){
+  const c=S.templates.find(x=>x.id===cid); if(!c) return;
+  promptBox('New case type in '+c.name,[
+    {k:'name',l:'Case type name (English)',ph:'e.g. Partition Suit'},
+    {k:'mr',l:'Marathi name',ph:'e.g. वाटप दावा'},
+    {k:'icon',l:'Icon (one emoji)',v:'📄'},
+    {k:'docs',l:'Document list — one per line',type:'textarea',ph:'7/12 extract\nPurchase deed\nMutation entries'}
+  ],o=>{
+    if(!o.name) return toast('Name required','bad');
+    const t={id:uid('ct'),name:o.name,mr:o.mr,icon:o.icon||'📄',
+      docs:(o.docs||'').split('\n').map(s=>s.trim()).filter(Boolean), qns:[]};
+    c.types.push(t); save(); led('Case type created',`${o.name} in ${c.name}`); toast('Case type added.');
+    if(cur.tab==='templates') renderTemplates(); if(cur.tab==='wizard') renderWizard();
+    cb&&cb(t);
+  });
+}
+function editDocs(cid,tid){
+  const c=S.templates.find(x=>x.id===cid), t=c&&c.types.find(x=>x.id===tid); if(!t) return;
+  promptBox('Documents for '+t.name,[{k:'docs',l:'One document per line',type:'textarea',v:(t.docs||[]).join('\n')}],o=>{
+    t.docs=(o.docs||'').split('\n').map(s=>s.trim()).filter(Boolean); save();
+    led('Checklist edited',t.name); toast('Checklist updated.'); renderTemplates();
+  });
+}
+function renameType(cid,tid){
+  const c=S.templates.find(x=>x.id===cid), t=c&&c.types.find(x=>x.id===tid); if(!t) return;
+  promptBox('Rename case type',[{k:'name',l:'Name',v:t.name},{k:'mr',l:'Marathi',v:t.mr||''},{k:'icon',l:'Icon',v:t.icon||'📄'}],o=>{
+    if(o.name) t.name=o.name; t.mr=o.mr; t.icon=o.icon||'📄'; save(); renderTemplates(); toast('Renamed.');
+  });
+}
+function renameCat(cid){
+  const c=S.templates.find(x=>x.id===cid); if(!c) return;
+  promptBox('Rename category',[{k:'name',l:'Name',v:c.name},{k:'mr',l:'Marathi',v:c.mr||''},{k:'icon',l:'Icon',v:c.icon||'📁'}],o=>{
+    if(o.name) c.name=o.name; c.mr=o.mr; c.icon=o.icon||'📁'; save(); renderTemplates(); toast('Renamed.');
+  });
+}
+function delType(cid,tid){
+  const c=S.templates.find(x=>x.id===cid), t=c&&c.types.find(x=>x.id===tid); if(!t) return;
+  confirmBox('Delete case type “'+t.name+'”?','Saved matters are not affected.',()=>{
+    c.types=c.types.filter(x=>x.id!==tid); save(); led('Case type deleted',t.name); renderTemplates(); toast('Deleted.','warn');
+  });
+}
+function delCat(cid){
+  const c=S.templates.find(x=>x.id===cid); if(!c) return;
+  confirmBox('Delete category “'+c.name+'”?','All '+c.types.length+' case types inside it will be removed. Saved matters are not affected.',()=>{
+    S.templates=S.templates.filter(x=>x.id!==cid); save(); led('Category deleted',c.name); renderTemplates(); toast('Deleted.','warn');
+  });
+}
+
+/* ---------------- LEDGER / BACKUP INFO ---------------- */
+function renderLedger(){
+  $('ledList').innerHTML = S.ledger.length ? S.ledger.slice(0,80).map(l=>
+    `<div class="ledi"><b>${esc(l.action)}</b><span class="sub" style="margin:0">${esc(l.detail||'')}</span><small>${fmtDT(l.time)}</small></div>`).join('')
+    : `<div class="empty">No activity yet.</div>`;
+}
+function renderBackupInfo(){
+  const p=$('lastBkPill');
+  if(S.lastBackup){ const d=daysTo(S.lastBackup.slice(0,10));
+    p.className='pill '+(d<-7?'red':d<-2?'warn':'ok');
+    p.textContent='Last backup: '+fmtDT(S.lastBackup); }
+  else { p.className='pill red'; p.textContent='⚠️ No backup taken yet'; }
+}
+
+/* ---------------- ADVOCATE DESK ---------------- */
+let advSel=null;
+function renderAdvocate(){
+  const ms=S.matters;
+  const pend=ms.reduce((a,m)=>a+(m.docs||[]).filter(d=>d.status==='pending').length,0);
+  const quoted=ms.reduce((a,m)=>a+(Number(String(m.data.feeQuoted||'').replace(/[^0-9.]/g,''))||0),0);
+  const adv=ms.reduce((a,m)=>a+(Number(String(m.data.feeAdvance||'').replace(/[^0-9.]/g,''))||0),0);
+  $('advStats').innerHTML=[['📁',ms.length,'Matters'],['⏳',pend,'Docs pending'],['💰',inr(quoted)||'—','Fee quoted'],['✅',inr(adv)||'—','Received'],['🔴',inr(quoted-adv)||'—','Outstanding']]
+    .map(s=>`<div class="stat"><span class="n">${s[0]} ${esc(String(s[1]))}</span><span class="l">${s[2]}</span></div>`).join('');
+  $('advTbl').innerHTML = `<thead><tr><th>Ref</th><th>Client</th><th>Mobile</th><th>Category / Type</th><th>Forum</th><th>Status</th><th>Docs</th><th>Next date</th><th>Fee</th><th>Taken by</th></tr></thead>
+  <tbody>${ms.map(m=>{
+    const rec=(m.docs||[]).filter(d=>d.status==='received').length;
+    return `<tr style="cursor:pointer" onclick="advPick('${m.id}')">
+      <td>${esc(m.ref||'')}</td><td><b>${esc(m.data.clientName||'')}</b></td><td>${esc(m.data.clientPhone||'')}</td>
+      <td>${esc(m.data.catName||'')}<br><small style="color:var(--muted)">${esc(m.data.typeName||'')}</small></td>
+      <td>${esc(m.data.forum||'')}</td><td>${esc(m.data.status||'Open')}</td>
+      <td>${rec}/${(m.docs||[]).length}</td><td>${fmtD(m.data.nextDate)}</td>
+      <td>${esc(inr(m.data.feeQuoted)||'')}</td><td>${esc(m.data.takenBy||'')}</td></tr>`;
+  }).join('')||'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:24px">No matters yet.</td></tr>'}</tbody>`;
+  if(advSel) advPick(advSel);
+}
+function advPick(id){
+  advSel=id; const m=S.matters.find(x=>x.id===id); if(!m) return;
+  const saved=cur; cur={...cur, data:m.data, docs:m.docs||[], catId:m.catId, typeId:m.typeId};
+  const groups=reviewGroups(); cur=saved;
+  $('advDetailActions').innerHTML=`
+    <button class="btn-primary" style="padding:9px 14px" onclick="openMatter('${id}')">Open in interview</button>
+    <button class="btn-ghost" style="padding:9px 14px" onclick="printOne('${id}','full')">📄 Full PDF</button>
+    <button class="btn-ghost" style="padding:9px 14px" onclick="printOne('${id}','draft')">📝 Drafting brief</button>
+    <button class="btn-ghost" style="padding:9px 14px" onclick="csvOne('${id}')">📊 CSV</button>`;
+  $('advDetail').innerHTML=`<div class="rev">${groups.map(g=>`<details class="rgrp" open><summary><span>${esc(g.t)}</span></summary>
+    <div class="rbody">${g.rows.filter(r=>String(r[1]||'').trim()).map(r=>`<div class="rrow"><div class="k">${esc(r[0])}</div><div class="v">${esc(r[1])}</div></div>`).join('')||'<div class="sub">—</div>'}</div></details>`).join('')}
+    <details class="rgrp" open><summary><span>Documents</span></summary><div class="rbody">
+      ${(m.docs||[]).map(d=>`<div class="rrow"><div class="k">${esc(d.name)}</div><div class="v">${d.status==='received'?'✅ Received':d.status==='na'?'— N/A':'⏳ Pending'}${d.note?' · '+esc(d.note):''}</div></div>`).join('')||'<div class="sub">—</div>'}
+    </div></details></div>`;
+}
+</script>
+<script>
+/* ================================================================
+   EXPORT — CSV · JSON · PRINT-PDF · REAL PDF FILE
+   ================================================================ */
+function dl(filename, content, mime){
+  const blob = content instanceof Blob ? content : new Blob([content], {type:mime||'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+function slug(s){ return String(s||'file').replace(/[^\w\u0900-\u097F]+/g,'_').replace(/^_|_$/g,'').slice(0,48)||'file'; }
+function stamp(){ const d=new Date(); const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`; }
+function markBackup(){ S.lastBackup=nowIso(); save(); if(cur.tab==='backup') renderBackupInfo(); }
+
+/* ---------- CSV ---------- */
+function csvCell(v){
+  let s = Array.isArray(v)? v.join(' | ') : (v===undefined||v===null?'':String(v));
+  s = s.replace(/\r?\n/g,' ⏎ ');
+  return /[",;\t]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function csvBuild(rows){ return '\uFEFF' + rows.map(r=>r.map(csvCell).join(',')).join('\r\n'); }
+
+function matterFlat(m){
+  const o = {
+    'Ref No': m.ref||'', 'Created': fmtDT(m.created), 'Last updated': fmtDT(m.updated||m.created),
+    'Client Name': m.data.clientName||'', 'Mobile': m.data.clientPhone||'', 'Alternate': m.data.clientAlt||'',
+    'Email': m.data.clientEmail||'', 'Age': m.data.clientAge||'', 'Occupation': m.data.clientOcc||'',
+    'Address': m.data.clientAddress||'', 'ID Proof': arr(m.data.idProof), 'Client Role': m.data.clientRole||'',
+    'Came Via': m.data.howCame||'', 'Referred By': m.data.refBy||'',
+    'Category': m.data.catName||'', 'Case Type': m.data.typeName||'',
+    'Opposite Parties': m.data.oppCount||'', 'Opposite Names': m.data.oppNames||'',
+    'Opposite Address': m.data.oppAddress||'', 'Relationship': m.data.oppRelation||'',
+    'Opp Advocate': m.data.oppAdvocate||'',
+    'Forum': m.data.forum||'', 'Forum Place': m.data.forumPlace||'', 'Case No': m.data.caseNo||'', 'Stage': m.data.caseStage||''
+  };
+  const c=S.templates.find(x=>x.id===m.catId), t=c&&c.types.find(x=>x.id===m.typeId);
+  (t?t.qns:[]).forEach(q=>{ const v=m.data[q.k]; if(v!==undefined&&v!=='') o[q.q]= Array.isArray(v)?v.join(' | '):(q.t==='date'?fmtD(v):String(v)); });
+  Object.assign(o, {
+    'Short Facts': m.data.factsSummary||'', 'Timeline': m.data.timeline||'', 'Relief Sought': m.data.reliefSought||'',
+    'Interim Relief': m.data.interimNeeded||'', 'Witnesses': m.data.witnesses||'',
+    'Prior Proceedings': arr(m.data.priorProceeding), 'Limitation Note': m.data.limitationNote||'',
+    'Weak Points (private)': m.data.weakPoints||'',
+    'Documents Received': (m.docs||[]).filter(d=>d.status==='received').map(d=>d.name).join(' | '),
+    'Documents Pending': (m.docs||[]).filter(d=>d.status==='pending').map(d=>d.name).join(' | '),
+    'Documents N/A': (m.docs||[]).filter(d=>d.status==='na').map(d=>d.name).join(' | '),
+    'Docs Received Count': (m.docs||[]).filter(d=>d.status==='received').length,
+    'Docs Total': (m.docs||[]).length, 'Documents Due By': fmtD(m.data.docDeadline),
+    'Fee Status': m.data.feeStatus||'', 'Fee Quoted': m.data.feeQuoted||'', 'Advance Received': m.data.feeAdvance||'',
+    'Payment Mode': m.data.feeMode||'', 'Expenses': m.data.expenses||'',
+    'Next Date': fmtD(m.data.nextDate), 'Key Date': fmtD(m.data.keyDate),
+    'Status': m.data.status||'Open', 'Priority': m.data.priority||'', 'Next Action': arr(m.data.nextAction),
+    'Note for Advocate (private)': m.data.internNotes||'',
+    'Interview Taken By': m.data.takenBy||'', 'Interview Date': fmtD(m.data.intvDate)
+  });
+  return o;
+}
+function csvAll(list, name){
+  if(!list.length){ toast('Nothing to export.','warn'); return; }
+  const flats=list.map(matterFlat);
+  const cols=[]; flats.forEach(f=>Object.keys(f).forEach(k=>{ if(!cols.includes(k)) cols.push(k); }));
+  dl(`${name}_${stamp()}.csv`, csvBuild([cols, ...flats.map(f=>cols.map(c=>f[c]??''))]), 'text/csv;charset=utf-8');
+  led('CSV exported', `${list.length} matter(s)`); markBackup(); toast('CSV downloaded ✓');
+}
+function csvOne(id){
+  const m=S.matters.find(x=>x.id===id); if(!m) return;
+  const f=matterFlat(m);
+  dl(`${slug(m.data.clientName)}_${slug(m.ref)}_${stamp()}.csv`,
+     csvBuild([['Field','Value'], ...Object.entries(f)]), 'text/csv;charset=utf-8');
+  toast('CSV downloaded ✓');
+}
+function csvDocs(){
+  const rows=[['Ref','Client','Mobile','Case Type','Document','Status','Note','Due by']];
+  S.matters.forEach(m=>(m.docs||[]).forEach(d=>rows.push([m.ref||'',m.data.clientName||'',m.data.clientPhone||'',m.data.typeName||'',d.name,
+    d.status==='received'?'Received':d.status==='na'?'N/A':'Pending', d.note||'', fmtD(m.data.docDeadline)])));
+  if(rows.length===1){ toast('No documents to export.','warn'); return; }
+  dl(`origo_documents_${stamp()}.csv`, csvBuild(rows), 'text/csv;charset=utf-8');
+  led('Document CSV exported', (rows.length-1)+' rows'); markBackup(); toast('Document CSV downloaded ✓');
+}
+
+/* ---------- JSON ---------- */
+function jsonAll(){
+  const payload={app:'Origo Kiosk', version:2, exportedAt:nowIso(), office:S.office,
+    templates:S.templates, matters:S.matters, ledger:S.ledger};
+  dl(`origo_backup_${stamp()}.json`, JSON.stringify(payload,null,2), 'application/json');
+  led('JSON backup created', S.matters.length+' matters'); markBackup(); toast('JSON backup downloaded ✓');
+}
+function jsonOne(id){
+  const m=S.matters.find(x=>x.id===id); if(!m) return;
+  const c=S.templates.find(x=>x.id===m.catId), t=c&&c.types.find(x=>x.id===m.typeId);
+  dl(`${slug(m.data.clientName)}_${slug(m.ref)}.json`,
+     JSON.stringify({app:'Origo Kiosk',version:2,exportedAt:nowIso(),matter:m,
+       template:t?{name:t.name,mr:t.mr,docs:t.docs,questions:t.qns}:null, flat:matterFlat(m)},null,2),'application/json');
+  toast('JSON downloaded ✓');
+}
+function restoreJson(file){
+  const r=new FileReader();
+  r.onload=()=>{
+    let j; try{ j=JSON.parse(r.result); }catch{ return toast('Not a valid JSON file.','bad'); }
+    const inM=Array.isArray(j.matters)?j.matters:[], inT=Array.isArray(j.templates)?j.templates:[];
+    if(!inM.length && !inT.length) return toast('No Origo data found in that file.','bad');
+    const d=modal(`<h3>Restore backup</h3>
+      <p class="sub">File contains <b>${inM.length}</b> matters and <b>${inT.length}</b> categories.<br>Current device has <b>${S.matters.length}</b> matters.</p>
+      <div class="row" style="margin-top:8px"><button class="btn-primary grow" data-merge>➕ Merge (keep both)</button>
+      <button class="btn-danger grow" data-repl>♻️ Replace everything</button></div>
+      <div class="row end" style="margin-top:12px"><button class="btn-ghost" data-no>Cancel</button></div>`);
+    d.querySelector('[data-no]').onclick=()=>d.remove();
+    d.querySelector('[data-merge]').onclick=()=>{
+      const have=new Set(S.matters.map(m=>m.id)); let n=0;
+      inM.forEach(m=>{ if(!have.has(m.id)){ S.matters.push(m); n++; } });
+      const ht=new Set(S.templates.map(t=>t.id)); let nt=0;
+      inT.forEach(t=>{ if(!ht.has(t.id)){ S.templates.push(t); nt++; } });
+      save(); led('Backup merged', `${n} matters, ${nt} categories added`); d.remove(); go('matters'); toast(`Merged ${n} matters ✓`);
+    };
+    d.querySelector('[data-repl]').onclick=()=>{
+      S.matters=inM; if(inT.length) S.templates=inT; if(j.office) S.office=j.office;
+      save(); led('Backup restored (replace)', inM.length+' matters'); d.remove(); go('matters'); toast('Data replaced ✓');
+    };
+  };
+  r.readAsText(file);
+}
+
+/* ================================================================
+   PRINT SHEETS  (renders Marathi perfectly, Save as PDF)
+   ================================================================ */
+function pHead(title, sub){
+  const o=S.office;
+  return `<div class="phead">
+    <h1>${esc(o.name||'Advocate Office')}</h1>
+    <div class="pmuted">${esc(o.advocate||'')}${o.advocate&&o.place?' · ':''}${esc(o.place||'')}</div>
+    <div style="margin-top:6pt;font-weight:700">${esc(title)}</div>
+    ${sub?`<div class="pmuted">${esc(sub)}</div>`:''}
+  </div>`;
+}
+function kvTable(rows){
+  const r=rows.filter(x=>String(x[1]||'').trim());
+  if(!r.length) return '<div class="pmuted">—</div>';
+  return `<div class="kv">${r.map(x=>`<div class="k">${esc(x[0])}</div><div>${esc(x[1]).replace(/\n/g,'<br>')}</div>`).join('')}</div>`;
+}
+function sheetClient(m){
+  const pen=(m.docs||[]).filter(d=>d.status==='pending');
+  const rec=(m.docs||[]).filter(d=>d.status==='received');
+  return `<div class="psheet">
+    ${pHead('DOCUMENT REQUISITION / कागदपत्रांची यादी', 'Ref: '+(m.ref||'')+'  ·  Date: '+fmtD(m.data.intvDate||todayStr()))}
+    ${kvTable([['Client / अशिल',m.data.clientName],['Mobile / मोबाईल',m.data.clientPhone],
+      ['Matter / प्रकरण',(m.data.catName||'')+' — '+(m.data.typeName||'')],
+      ['Forum / न्यायालय',[m.data.forum,m.data.forumPlace].filter(Boolean).join(', ')],
+      ['Case No.',m.data.caseNo]])}
+    <h2>Documents still to be brought / अद्याप आणावयाची कागदपत्रे</h2>
+    ${pen.length?`<table><tr><th style="width:26pt">#</th><th>Document / कागदपत्र</th><th style="width:120pt">Remark</th><th style="width:52pt">✔</th></tr>
+      ${pen.map((d,i)=>`<tr><td>${i+1}</td><td>${esc(d.name)}</td><td>${esc(d.note||'')}</td><td></td></tr>`).join('')}</table>`
+      :'<div class="pmuted">All documents received. / सर्व कागदपत्रे मिळाली आहेत.</div>'}
+    ${m.data.docDeadline?`<p style="margin-top:8pt"><b>Please bring these by / कृपया या तारखेपर्यंत आणा: ${esc(fmtD(m.data.docDeadline))}</b></p>`:''}
+    <h2>Documents already received / मिळालेली कागदपत्रे</h2>
+    ${rec.length?`<table><tr><th style="width:26pt">#</th><th>Document</th><th style="width:120pt">Remark</th></tr>
+      ${rec.map((d,i)=>`<tr><td>${i+1}</td><td>${esc(d.name)}</td><td>${esc(d.note||'')}</td></tr>`).join('')}</table>`
+      :'<div class="pmuted">None yet.</div>'}
+    ${m.data.nextDate?`<p style="margin-top:9pt"><b>Next appointment / पुढील भेट: ${esc(fmtD(m.data.nextDate))}</b></p>`:''}
+    ${m.data.feeStatus==='Fee discussed'?`<h2>Fee / फी</h2>${kvTable([['Total fee',inr(m.data.feeQuoted)],['Advance received',inr(m.data.feeAdvance)],['Balance',inr((Number(String(m.data.feeQuoted||'').replace(/[^0-9.]/g,''))||0)-(Number(String(m.data.feeAdvance||'').replace(/[^0-9.]/g,''))||0))],['Expenses',m.data.expenses]])}`:''}
+    <div class="sign"><div>Received by client / अशिलाची सही<br><br>____________________</div>
+      <div>For the office / कार्यालयाकरिता<br><br>____________________</div></div>
+    <div class="pmuted" style="margin-top:12pt">This is an internal office document requisition and not legal advice.</div>
+  </div>`;
+}
+function sheetFull(m, {privateInfo=true}={}){
+  const saved=cur; cur={...cur, data:m.data, docs:m.docs||[], catId:m.catId, typeId:m.typeId};
+  const groups=reviewGroups(); cur=saved;
+  return `<div class="psheet">
+    ${pHead('CLIENT INTERVIEW RECORD / अशिल मुलाखत नोंद','Ref: '+(m.ref||'')+'  ·  Interviewed: '+fmtD(m.data.intvDate)+'  ·  By: '+(m.data.takenBy||'—'))}
+    ${groups.map(g=>{
+      const rows=g.rows.filter(r=>String(r[1]||'').trim()).filter(r=>privateInfo||!/^🔒/.test(r[0]));
+      return rows.length?`<h2>${esc(g.t)}${g.mr?' / '+esc(g.mr):''}</h2>${kvTable(rows)}`:'';
+    }).join('')}
+    <h2>Documents / कागदपत्रे</h2>
+    <table><tr><th style="width:26pt">#</th><th>Document</th><th style="width:80pt">Status</th><th style="width:110pt">Note</th></tr>
+    ${(m.docs||[]).map((d,i)=>`<tr><td>${i+1}</td><td>${esc(d.name)}</td><td>${d.status==='received'?'Received':d.status==='na'?'N/A':'Pending'}</td><td>${esc(d.note||'')}</td></tr>`).join('')||'<tr><td colspan="4">—</td></tr>'}</table>
+    <div class="sign"><div>Prepared by: ${esc(m.data.takenBy||'')}<br><br>____________________</div>
+      <div>Checked by Advocate<br><br>____________________</div></div>
+  </div>`;
+}
+function sheetDraft(m){
+  const c=S.templates.find(x=>x.id===m.catId), t=c&&c.types.find(x=>x.id===m.typeId);
+  const qrows=(t?t.qns:[]).map(q=>{ const v=m.data[q.k]; return (v===undefined||v===''||(Array.isArray(v)&&!v.length))?null:[q.q, Array.isArray(v)?v.join(', '):(q.t==='date'?fmtD(v):(q.t==='money'?inr(v):String(v)))]; }).filter(Boolean);
+  return `<div class="psheet">
+    ${pHead('DRAFTING BRIEF / मसुदा टिपण','Ref: '+(m.ref||'')+'  ·  '+(m.data.typeName||''))}
+    <h2>Parties</h2>
+    ${kvTable([['Client (with role)',(m.data.clientName||'')+(m.data.clientRole?' — '+m.data.clientRole:'')],
+      ['Age / Occupation',[m.data.clientAge,m.data.clientOcc].filter(Boolean).join(' / ')],
+      ['Client address',m.data.clientAddress],['Opposite party',m.data.oppNames],['Opposite address',m.data.oppAddress]])}
+    <h2>Jurisdiction & Stage</h2>
+    ${kvTable([['Forum',[m.data.forum,m.data.forumPlace].filter(Boolean).join(', ')],['Case number',m.data.caseNo],
+      ['Stage',m.data.caseStage],['Limitation',m.data.limitationNote],['Key date',fmtD(m.data.keyDate)]])}
+    <h2>Facts</h2><div style="white-space:pre-wrap;font-size:10.5pt">${esc(m.data.factsSummary||'—')}</div>
+    ${m.data.timeline?`<h2>Timeline</h2><div style="white-space:pre-wrap;font-size:10.5pt">${esc(m.data.timeline)}</div>`:''}
+    ${qrows.length?`<h2>Case-specific particulars</h2>${kvTable(qrows)}`:''}
+    <h2>Relief</h2>${kvTable([['Relief sought',m.data.reliefSought],['Interim relief',m.data.interimNeeded],['Witnesses',m.data.witnesses],['Prior proceedings',arr(m.data.priorProceeding)]])}
+    <h2>Evidence available</h2>
+    <table><tr><th>Document</th><th style="width:80pt">Status</th></tr>
+    ${(m.docs||[]).filter(d=>d.status!=='na').map(d=>`<tr><td>${esc(d.name)}</td><td>${d.status==='received'?'On record':'To be collected'}</td></tr>`).join('')||'<tr><td colspan="2">—</td></tr>'}</table>
+    ${m.data.weakPoints?`<h2>Weak points to address</h2><div style="white-space:pre-wrap;font-size:10.5pt">${esc(m.data.weakPoints)}</div>`:''}
+    ${m.data.internNotes?`<h2>Note from the interviewer</h2><div style="white-space:pre-wrap;font-size:10.5pt">${esc(m.data.internNotes)}</div>`:''}
+  </div>`;
+}
+function sheetRegister(list){
+  return `<div class="psheet">${pHead('MATTER REGISTER / प्रकरण नोंदवही', list.length+' matters · '+fmtD(todayStr()))}
+    <table><tr><th>#</th><th>Ref</th><th>Client</th><th>Mobile</th><th>Case type</th><th>Forum</th><th>Status</th><th>Docs</th><th>Next date</th></tr>
+    ${list.map((m,i)=>`<tr><td>${i+1}</td><td>${esc(m.ref||'')}</td><td>${esc(m.data.clientName||'')}</td><td>${esc(m.data.clientPhone||'')}</td>
+      <td>${esc(m.data.typeName||'')}</td><td>${esc(m.data.forum||'')}</td><td>${esc(m.data.status||'Open')}</td>
+      <td>${(m.docs||[]).filter(d=>d.status==='received').length}/${(m.docs||[]).length}</td><td>${fmtD(m.data.nextDate)}</td></tr>`).join('')}</table></div>`;
+}
+function doPrint(html, label){
+  $('printArea').innerHTML=html;
+  led('Printed / PDF', label||'');
+  setTimeout(()=>{ window.print(); }, 120);
+}
+function printOne(id, kind){
+  const m=S.matters.find(x=>x.id===id); if(!m) return toast('Save the matter first.','warn');
+  if(kind==='client') doPrint(sheetClient(m), 'Client slip — '+(m.data.clientName||''));
+  else if(kind==='draft') doPrint(sheetDraft(m), 'Drafting brief — '+(m.data.clientName||''));
+  else doPrint(sheetFull(m), 'Full record — '+(m.data.clientName||''));
+}
+function printCurrent(kind){
+  let m = cur.matterId ? S.matters.find(x=>x.id===cur.matterId) : null;
+  if(!m){ m = saveMatter(false); if(!m) return; }
+  else { m.data={...cur.data}; m.docs=JSON.parse(JSON.stringify(cur.docs)); m.updated=nowIso(); save(); }
+  printOne(m.id, kind);
+}
+
+/* ================================================================
+   REAL .PDF FILE  (minimal PDF writer, WinAnsi / Latin-1 only)
+   ================================================================ */
+function pdfEsc(s){ return String(s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)'); }
+function toLatin(s){
+  return String(s??'').replace(/[\u0900-\u097F\u200B-\u200D]+/g, m=>'[Marathi text - see print PDF]')
+    .replace(/[₹]/g,'Rs.').replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"')
+    .replace(/[\u2013\u2014]/g,'-').replace(/[\u2026]/g,'...')
+    .replace(/[^\x20-\x7E\n]/g,'');
+}
+function wrapText(s, max){
+  const out=[];
+  String(s).split('\n').forEach(par=>{
+    const w=par.split(/\s+/); let line='';
+    w.forEach(word=>{
+      if(!line){ line=word; }
+      else if((line+' '+word).length<=max){ line+=' '+word; }
+      else { out.push(line); line=word; }
+    });
+    out.push(line);
+  });
+  return out;
+}
+function buildPdf(blocks, title){
+  const PW=595.28, PH=841.89, ML=48, MT=800, LH=13.6, BOT=52;
+  const pages=[]; let ops=[], y=MT;
+  const nl=(n=1)=>{ y-=LH*n; if(y<BOT){ pages.push(ops); ops=[]; y=MT; } };
+  const put=(txt,{size=10,bold=false,color='0 0 0',indent=0}={})=>{
+    ops.push(`BT /${bold?'F2':'F1'} ${size} Tf ${color} rg ${ML+indent} ${y} Td (${pdfEsc(txt)}) Tj ET`);
+  };
+  const rule=()=>{ ops.push(`0.6 w 0.06 0.46 0.43 RG ${ML} ${y+9} m ${PW-ML} ${y+9} l S`); };
+
+  blocks.forEach(b=>{
+    if(b.t==='h1'){ if(y<MT-2) nl(1); put(toLatin(b.v),{size:16,bold:true,color:'0.06 0.46 0.43'}); nl(1.35); }
+    else if(b.t==='h2'){ nl(.6); put(toLatin(b.v),{size:11.5,bold:true,color:'0.06 0.46 0.43'}); nl(.35); rule(); nl(.9); }
+    else if(b.t==='sub'){ put(toLatin(b.v),{size:9,color:'0.35 0.35 0.35'}); nl(1.15); }
+    else if(b.t==='kv'){
+      const k=toLatin(b.k), lines=wrapText(toLatin(b.v),62);
+      put(k.length>30?k.slice(0,29)+'.':k,{size:9.5,bold:true,color:'0.25 0.3 0.3'});
+      lines.forEach((ln,i)=>{ if(i>0) nl(1); ops.push(`BT /F1 10 Tf 0 0 0 rg ${ML+185} ${y} Td (${pdfEsc(ln)}) Tj ET`); });
+      nl(1.06);
+    }
+    else if(b.t==='p'){ wrapText(toLatin(b.v),96).forEach(ln=>{ put(ln,{size:10}); nl(1); }); nl(.25); }
+    else if(b.t==='li'){ wrapText(toLatin(b.v),92).forEach((ln,i)=>{ put((i?'   ':'•  ')+ln,{size:10}); nl(1); }); }
+    else if(b.t==='gap'){ nl(b.v||1); }
+  });
+  pages.push(ops);
+
+  const objs=[]; const add=s=>{ objs.push(s); return objs.length; };
+  const fontR=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  const fontB=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  const pagesRefIdx = objs.length + pages.length*2 + 1;
+  const kids=[];
+  pages.forEach((p,i)=>{
+    const stream=p.join('\n');
+    const cIdx=add(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`);
+    const pIdx=add(`<< /Type /Page /Parent ${pagesRefIdx} 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /Font << /F1 ${fontR} 0 R /F2 ${fontB} 0 R >> >> /Contents ${cIdx} 0 R >>`);
+    kids.push(pIdx);
+  });
+  const pagesIdx=add(`<< /Type /Pages /Kids [${kids.map(k=>k+' 0 R').join(' ')}] /Count ${kids.length} >>`);
+  const infoIdx=add(`<< /Title (${pdfEsc(toLatin(title||'Origo Record'))}) /Producer (Origo Kiosk) /CreationDate (D:${new Date().toISOString().replace(/[-:]/g,'').slice(0,15)}Z) >>`);
+  const catIdx=add(`<< /Type /Catalog /Pages ${pagesIdx} 0 R >>`);
+
+  let out='%PDF-1.4\n'; const off=[];
+  objs.forEach((o,i)=>{ off.push(out.length); out+=`${i+1} 0 obj\n${o}\nendobj\n`; });
+  const xref=out.length;
+  out+=`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`;
+  off.forEach(o=>{ out+=String(o).padStart(10,'0')+' 00000 n \n'; });
+  out+=`trailer\n<< /Size ${objs.length+1} /Root ${catIdx} 0 R /Info ${infoIdx} 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  const bytes=new Uint8Array(out.length);
+  for(let i=0;i<out.length;i++) bytes[i]=out.charCodeAt(i)&0xff;
+  return new Blob([bytes],{type:'application/pdf'});
+}
+function pdfFileOne(id){
+  const m=S.matters.find(x=>x.id===id); if(!m) return toast('Save the matter first.','warn');
+  const saved=cur; cur={...cur,data:m.data,docs:m.docs||[],catId:m.catId,typeId:m.typeId};
+  const groups=reviewGroups(); cur=saved;
+  const B=[];
+  B.push({t:'h1',v:S.office.name||'Advocate Office'});
+  if(S.office.advocate||S.office.place) B.push({t:'sub',v:[S.office.advocate,S.office.place].filter(Boolean).join(' | ')});
+  B.push({t:'sub',v:'CLIENT INTERVIEW RECORD   |   Ref: '+(m.ref||'')+'   |   Interviewed: '+fmtD(m.data.intvDate)+'   |   By: '+(m.data.takenBy||'-')});
+  groups.forEach(g=>{
+    const rows=g.rows.filter(r=>String(r[1]||'').trim());
+    if(!rows.length) return;
+    B.push({t:'h2',v:g.t});
+    rows.forEach(r=>B.push({t:'kv',k:String(r[0]).replace(/^🔒\s*/,'PRIVATE - '),v:String(r[1])}));
+  });
+  B.push({t:'h2',v:'Documents'});
+  (m.docs||[]).forEach(d=>B.push({t:'li',v:`${d.name} — ${d.status==='received'?'RECEIVED':d.status==='na'?'N/A':'PENDING'}${d.note?' ('+d.note+')':''}`}));
+  if(!(m.docs||[]).length) B.push({t:'p',v:'-'});
+  B.push({t:'gap',v:2});
+  B.push({t:'p',v:'Prepared by: '+(m.data.takenBy||'____________')+'          Checked by Advocate: ____________'});
+  B.push({t:'sub',v:'Generated by Origo Kiosk on '+fmtDT(nowIso())+'. Devanagari text is replaced by a placeholder in this file format - use "Full PDF (print)" for Marathi.'});
+  dl(`${slug(m.data.clientName)}_${slug(m.ref)}_${stamp()}.pdf`, buildPdf(B, (m.data.clientName||'')+' — Interview Record'), 'application/pdf');
+  led('PDF file downloaded', m.data.clientName||''); toast('PDF file downloaded ✓');
+}
+function pdfFileCurrent(){
+  let m = cur.matterId ? S.matters.find(x=>x.id===cur.matterId) : null;
+  if(!m){ m=saveMatter(false); if(!m) return; }
+  else { m.data={...cur.data}; m.docs=JSON.parse(JSON.stringify(cur.docs)); save(); }
+  pdfFileOne(m.id);
+}
+</script>
+<script>
+/* ================================================================
+   EVENT WIRING
+   ================================================================ */
+
+/* ---- tabs & top bar ---- */
+qsa('.tab').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+qsa('[data-goto]').forEach(b=>b.onclick=()=>go(b.dataset.goto));
+
+const LANGS=[{k:'both',l:'EN+मर'},{k:'en',l:'EN'},{k:'mr',l:'मराठी'}];
+function applyLang(){
+  document.body.classList.remove('lang-both','lang-en','lang-mr','hide-mr');
+  document.body.classList.add('lang-'+P.lang);
+  if(P.lang==='en') document.body.classList.add('hide-mr');
+  $('langLbl').textContent = (LANGS.find(x=>x.k===P.lang)||LANGS[0]).l;
+}
+$('langBtn').onclick=()=>{
+  const i=LANGS.findIndex(x=>x.k===P.lang);
+  P.lang=LANGS[(i+1)%LANGS.length].k; savePrefs(); applyLang();
+  toast('Language: '+(LANGS.find(x=>x.k===P.lang).l));
+};
+function applyMode(){
+  const adv = P.mode==='advocate';
+  $('modeLbl').textContent = adv?'Advocate':'Intern';
+  $('modeBtn').classList.toggle('on', adv);
+  qsa('.adv-only').forEach(e=>e.classList.toggle('hidden', !adv));
+  if(!adv && cur.tab==='advocate') go('home');
+}
+$('modeBtn').onclick=()=>{
+  if(P.mode==='advocate'){ P.mode='intern'; savePrefs(); applyMode(); toast('Intern mode — simplified.'); return; }
+  P.mode='advocate'; savePrefs(); applyMode(); toast('Advocate mode — full desk unlocked.');
+  if(!S.office.name) officeSetup();
+};
+function officeSetup(){
+  promptBox('Office details / कार्यालयाची माहिती',[
+    {k:'name',l:'Office name (printed on every sheet)',v:S.office.name,ph:'e.g. Deshmukh & Associates'},
+    {k:'advocate',l:'Advocate name',v:S.office.advocate,ph:'Adv. ...'},
+    {k:'place',l:'Address / place',v:S.office.place,ph:'Court road, Nashik · 9876543210'}
+  ],o=>{ S.office={...S.office,...o}; save(); toast('Office details saved.'); renderHome(); });
+}
+
+/* ---- home tiles ---- */
+$('tileNew').onclick=newInterview;
+$('tileResume').onclick=resumeDraft;
+$('mNew').onclick=newInterview;
+
+/* ---- wizard nav ---- */
+$('wizNext').onclick=wizNext;
+$('wizBack').onclick=()=>wizGoto(cur.step-1);
+$('wizDots').onclick=e=>{ const d=e.target.closest('.dot'); if(d) wizGoto(+d.dataset.step); };
+
+/* ---- delegated wizard body interactions ---- */
+const WB=$('wizBody');
+WB.addEventListener('click', e=>{
+  const catB=e.target.closest('[data-cat]');   if(catB){ pickCat(catB.dataset.cat); return; }
+  const typB=e.target.closest('[data-type]');  if(typB){ pickType(typB.dataset.type); return; }
+
+  const opt=e.target.closest('.opt[data-v]');
+  if(opt && opt.parentElement.dataset.opts!==undefined){
+    const box=opt.parentElement, key=box.dataset.opts, multi=box.dataset.multi==='1', v=opt.dataset.v;
+    if(multi){
+      const a=Array.isArray(cur.data[key])?[...cur.data[key]]:[];
+      const i=a.indexOf(v); i>=0?a.splice(i,1):a.push(v);
+      cur.data[key]=a; opt.classList.toggle('on');
+      scheduleDraft();
+      if(needsRerender(key)) renderWizard();
+    }else{
+      cur.data[key] = (cur.data[key]===v && !isRequiredKey(key)) ? '' : v;
+      scheduleDraft(); renderWizard();
+    }
+    return;
+  }
+  const sug=e.target.closest('.sug');
+  if(sug){ const key=sug.parentElement.dataset.sug; cur.data[key]=sug.dataset.v; scheduleDraft(); renderWizard(); return; }
+
+  const jmp=e.target.closest('[data-jump]'); if(jmp){ jumpToStepId(jmp.dataset.jump); return; }
+
+  const seg=e.target.closest('.seg button');
+  if(seg){ const row=seg.closest('.doc'), id=row.dataset.doc, d=cur.docs.find(x=>x.id===id);
+    if(d){ d.status=seg.dataset.v; scheduleDraft(); renderWizard(); } return; }
+  const del=e.target.closest('[data-del]');
+  if(del){ cur.docs=cur.docs.filter(x=>x.id!==del.dataset.del); scheduleDraft(); renderWizard(); return; }
+
+  if(e.target.id==='dAllRec'){ cur.docs.forEach(d=>d.status='received'); scheduleDraft(); renderWizard(); return; }
+  if(e.target.id==='dAllPen'){ cur.docs.forEach(d=>d.status='pending'); scheduleDraft(); renderWizard(); return; }
+  if(e.target.id==='addDocBtn'){ addDocFromInput(); return; }
+  if(e.target.id==='wAddCat'){ newCategory(c=>{ cur.catId=c.id; renderWizard(); }); return; }
+  if(e.target.id==='wAddType'){ addType(cur.catId, t=>{ pickType(t.id); }); return; }
+
+  if(e.target.closest('#rvSave')){ saveMatter(true); return; }
+  if(e.target.closest('#rvClient')){ printCurrent('client'); return; }
+  if(e.target.closest('#rvPdf')){ printCurrent('full'); return; }
+  if(e.target.closest('#rvPdfFile')){ pdfFileCurrent(); return; }
+  if(e.target.closest('#rvCsv')){ const m=cur.matterId?S.matters.find(x=>x.id===cur.matterId):saveMatter(false); if(m) csvOne(m.id); return; }
+  if(e.target.closest('#rvJson')){ const m=cur.matterId?S.matters.find(x=>x.id===cur.matterId):saveMatter(false); if(m) jsonOne(m.id); return; }
+});
+function addDocFromInput(){
+  const i=$('newDocName'); if(!i) return;
+  const v=i.value.trim(); if(!v) return toast('Type the document name first.','warn');
+  cur.docs.push({id:uid('d'),name:v,status:'pending',note:''}); scheduleDraft(); renderWizard();
+  setTimeout(()=>{const n=$('newDocName'); if(n) n.focus();},50);
+}
+/* keys whose change reveals other questions → re-render */
+function needsRerender(key){
+  const t=getType();
+  if(t && (t.qns||[]).some(q=>q.showIf && q.showIf.k===key)) return true;
+  return ['clientRole','oppCount','howCame','feeStatus'].includes(key);
+}
+/* fields whose hint/derived value updates on blur */
+function isLiveHintField(key){
+  if(key==='feeQuoted'||key==='feeAdvance') return true;
+  const t=getType(); const q=(t?t.qns:[]).find(x=>x.k===key);
+  return !!(q && (q.t==='money'||q.t==='date'));
+}
+function isRequiredKey(key){
+  const t=getType();
+  const q=(t?t.qns:[]).find(x=>x.k===key);
+  if(q&&q.req) return true;
+  return ['clientRole'].includes(key);
+}
+
+/* typed inputs — no re-render (keeps focus), just store */
+WB.addEventListener('input', e=>{
+  const el=e.target;
+  if(el.dataset.in!==undefined){ cur.data[el.dataset.in]=el.value; scheduleDraft(); return; }
+  if(el.dataset.note!==undefined){ const d=cur.docs.find(x=>x.id===el.dataset.note); if(d){ d.note=el.value; scheduleDraft(); } return; }
+});
+WB.addEventListener('change', e=>{
+  const el=e.target;
+  if(el.dataset.in!==undefined){
+    cur.data[el.dataset.in]=el.value; scheduleDraft();
+    if(needsRerender(el.dataset.in) || el.type==='date' || isLiveHintField(el.dataset.in)) renderWizard();
+  }
+});
+WB.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && e.target.id==='newDocName'){ e.preventDefault(); addDocFromInput(); }
+});
+
+/* ---- matters ---- */
+['mSearch','mFilter','mSort'].forEach(id=>$(id).addEventListener('input', renderMatters));
+$('mExportCsvAll').onclick=()=>csvAll(filteredMatters(),'origo_matters');
+$('mExportPdfAll').onclick=()=>{ const l=filteredMatters(); if(!l.length) return toast('Nothing to print.','warn'); doPrint(sheetRegister(l),'Matter register'); };
+
+/* ---- templates ---- */
+$('tNewType').onclick=()=>{
+  if(!S.templates.length) return newCategory();
+  const d=modal(`<h3>Add a case type — pick the category</h3>
+    <div class="opts">${S.templates.map(c=>`<button class="opt" data-c="${c.id}"><span class="oic">${c.icon||'📁'}</span><span class="otx">${esc(c.name)}<small>${c.types.length} types</small></span></button>`).join('')}</div>
+    <div class="row end" style="margin-top:14px"><button class="btn-ghost" data-newcat>＋ New category instead</button><button class="btn-ghost" data-no>Cancel</button></div>`);
+  d.querySelector('[data-no]').onclick=()=>d.remove();
+  d.querySelector('[data-newcat]').onclick=()=>{ d.remove(); newCategory(); };
+  d.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{ d.remove(); addType(b.dataset.c); });
+};
+$('tResetTpl').onclick=()=>confirmBox('Restore the default case-type library?','Your custom categories and case types will be REPLACED. Saved matters are not touched.',()=>{
+  S.templates=defaultTemplates(); save(); led('Templates reset','Defaults restored'); renderTemplates(); toast('Defaults restored.','warn'); });
+
+/* ---- backup ---- */
+$('bkJson').onclick=jsonAll;
+$('bkCsv').onclick=()=>csvAll(S.matters,'origo_all_matters');
+$('bkCsvDocs').onclick=csvDocs;
+$('bkRestore').onclick=()=>$('fileIn').click();
+$('fileIn').onchange=e=>{ const f=e.target.files[0]; if(f) restoreJson(f); e.target.value=''; };
+$('bkAll').onclick=()=>{ jsonAll(); setTimeout(()=>csvAll(S.matters,'origo_all_matters'),400); setTimeout(csvDocs,900); };
+$('ledClear').onclick=()=>confirmBox('Clear the activity ledger?','Matters and templates are not affected.',()=>{ S.ledger=[]; save(); renderLedger(); toast('Ledger cleared.','warn'); });
+$('wipeBtn').onclick=()=>confirmBox('Erase ALL data from this device?','Every matter, template and note will be gone permanently. Export a JSON backup first.',()=>{
+  confirmBox('Are you absolutely sure?','Last chance. This cannot be undone.',()=>{
+    localStorage.removeItem(SK.data); localStorage.removeItem(SK.draft);
+    S=defaultState(); save(); go('home'); toast('All data erased.','warn'); });
+});
+
+/* ---- advocate desk ---- */
+$('advCsv').onclick=()=>csvAll(S.matters,'origo_advocate_desk');
+$('advPrint').onclick=()=>{ if(!S.matters.length) return toast('No matters.','warn'); doPrint(sheetRegister(S.matters),'Register'); };
+
+/* ---- keyboard shortcuts (desk use) ---- */
+document.addEventListener('keydown', e=>{
+  if(document.body.classList.contains('locked')) return;
+  const tgt = e.target;
+  if(tgt && typeof tgt.matches==='function' && tgt.matches('input,textarea,select')) {
+    if(e.key==='Enter' && !e.shiftKey && e.target.tagName!=='TEXTAREA' && cur.tab==='wizard'){ e.preventDefault(); wizNext(); }
+    return;
+  }
+  if(cur.tab==='wizard'){
+    if(e.key==='ArrowRight'||e.key==='Enter'){ e.preventDefault(); wizNext(); }
+    if(e.key==='ArrowLeft'){ e.preventDefault(); wizGoto(cur.step-1); }
+  }
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); if(cur.tab==='wizard') saveMatter(false); }
+});
+
+/* ---- warn on close with unsaved work ---- */
+window.addEventListener('beforeunload', e=>{
+  if(cur.tab==='wizard' && (cur.data.clientName||'').trim() && !cur.matterId){ e.preventDefault(); e.returnValue=''; }
+});
+
+/* ================================================================
+   PIN LOCK  — default 2244
+   ================================================================ */
+const DEFAULT_PIN = '2244';
+const PIN_LEN = 4;
+let pinBuf = '', pinTries = 0, lockTimer = null;
+
+function pinHash(s){                       // light obfuscation, not encryption
+  let h = 5381;
+  for(let i=0;i<s.length;i++) h = ((h<<5) + h + s.charCodeAt(i)) >>> 0;
+  return 'p'+h.toString(36);
+}
+function currentPin(){ return P.pin || pinHash(DEFAULT_PIN); }
+function isDefaultPin(){ return currentPin() === pinHash(DEFAULT_PIN); }
+
+function drawDots(){
+  qsa('#pinDots i').forEach((d,i)=>d.classList.toggle('on', i < pinBuf.length));
+}
+function lockMsg(t, ok){
+  const el = $('lockMsg');
+  el.textContent = t || '';
+  el.classList.toggle('ok', !!ok);
+}
+function lockApp(){
+  pinBuf=''; drawDots(); lockMsg('');
+  document.body.classList.add('locked');
+  $('lockScreen').style.display='grid';
+}
+function unlockApp(){
+  document.body.classList.remove('locked');
+  $('lockScreen').style.display='none';
+  pinBuf=''; pinTries=0; drawDots();
+  if(isDefaultPin() && !P.pinNagged){
+    P.pinNagged = true; savePrefs();
+    setTimeout(()=>toast('You are using the default PIN 2244. Change it in Backup → Security.','warn',5200), 900);
+  }
+}
+function tryPin(){
+  if(pinBuf.length < PIN_LEN){ lockMsg('Enter all '+PIN_LEN+' digits'); return; }
+  if(pinHash(pinBuf) === currentPin()){
+    lockMsg('Unlocked ✓', true);
+    setTimeout(unlockApp, 220);
+  }else{
+    pinTries++;
+    pinBuf=''; drawDots();
+    const l=$('lockScreen');
+    l.classList.add('shake'); setTimeout(()=>l.classList.remove('shake'), 420);
+    lockMsg(pinTries>=3 ? 'Wrong PIN. Default is 2244 if never changed.' : 'Wrong PIN — try again / चुकीचा पिन');
+  }
+}
+function pinKey(k){
+  if(k==='clear'){ pinBuf=''; drawDots(); lockMsg(''); return; }
+  if(k==='enter'){ tryPin(); return; }
+  if(k==='back'){ pinBuf=pinBuf.slice(0,-1); drawDots(); lockMsg(''); return; }
+  if(pinBuf.length>=PIN_LEN) return;
+  pinBuf += k; drawDots(); lockMsg('');
+  if(pinBuf.length===PIN_LEN) setTimeout(tryPin, 160);
+}
+$('keypad').addEventListener('click', e=>{
+  const b=e.target.closest('[data-k]'); if(b) pinKey(b.dataset.k);
+});
+document.addEventListener('keydown', e=>{
+  if(!document.body.classList.contains('locked')) return;
+  if(/^[0-9]$/.test(e.key)){ e.preventDefault(); pinKey(e.key); }
+  else if(e.key==='Backspace'){ e.preventDefault(); pinKey('back'); }
+  else if(e.key==='Enter'){ e.preventDefault(); pinKey('enter'); }
+  else if(e.key==='Escape'){ e.preventDefault(); pinKey('clear'); }
+});
+$('lockBtn').onclick = lockApp;
+$('pinLockNow').onclick = lockApp;
+$('pinChange').onclick = ()=>{
+  promptBox('Change office PIN / पिन बदला', [
+    {k:'old', l:'Current PIN', ph:'default 2244'},
+    {k:'n1',  l:'New '+PIN_LEN+'-digit PIN', ph:'e.g. 7391'},
+    {k:'n2',  l:'Repeat new PIN', ph:'type it again'}
+  ], o=>{
+    if(pinHash(o.old||'') !== currentPin()) return toast('Current PIN is wrong.','bad');
+    if(!new RegExp('^[0-9]{'+PIN_LEN+'}$').test(o.n1||'')) return toast('New PIN must be exactly '+PIN_LEN+' digits.','bad');
+    if(o.n1 !== o.n2) return toast('The two new PINs do not match.','bad');
+    P.pin = pinHash(o.n1); P.pinNagged = true; savePrefs();
+    led('PIN changed','Office PIN updated');
+    renderPinState();
+    toast('PIN changed ✓ Remember it — there is no recovery.');
+  });
+};
+function renderPinState(){
+  const el=$('pinState'); if(!el) return;
+  el.className = 'pill ' + (isDefaultPin() ? 'warn' : 'ok');
+  el.textContent = isDefaultPin() ? '⚠️ Using default PIN 2244' : '✓ Custom PIN set';
+}
+
+/* auto-lock after 10 minutes of no touch */
+function resetIdle(){
+  clearTimeout(lockTimer);
+  lockTimer = setTimeout(()=>{ if(!document.body.classList.contains('locked')) lockApp(); }, 10*60*1000);
+}
+['click','keydown','touchstart','input'].forEach(ev=>document.addEventListener(ev, resetIdle, {passive:true}));
+
+/* ---- boot ---- */
+applyLang(); applyMode(); go('home');
+lockApp(); resetIdle();
+if(!S.office.name && P.mode==='advocate') setTimeout(officeSetup, 600);
+(function backupNag(){
+  const d = S.lastBackup ? daysTo(S.lastBackup.slice(0,10)) : null;
+  if(S.matters.length>=3 && (d===null || d<-7))
+    setTimeout(()=>toast('Backup reminder: it has been a while. Open Backup tab → "Backup Everything Now".','warn',6000), 1800);
+})();
+window.origo = {S, go, newInterview, openMatter, officeSetup, steps, chunkQns, lockApp, unlockApp, pinKey, pinHash};
+</script>
+</body>
+</html>
