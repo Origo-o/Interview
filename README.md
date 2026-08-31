@@ -33,7 +33,7 @@ working with the internet switched off.
 
 The app opens on a lock screen.
 
-**Default PIN: `2244`**
+**Default PIN: `*****`**
 
 Change it from **Backup → Security → Change PIN**. The screen also locks itself
 after 10 minutes of inactivity, and there is a 🔒 button in the top bar to lock
