@@ -1439,7 +1439,14 @@ function renderWizard(){
   $('wizBack').disabled = cur.step===0;
   $('wizBack').style.opacity = cur.step===0?'.4':'1';
   $('wizNext').innerHTML = cur.step===st.length-1 ? '✅ Done' : 'Next →';
-  const dots=$('wizDots'); const on=dots.querySelector('.dot.on'); if(on) on.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+  const dots=$('wizDots'); const on=dots.querySelector('.dot.on');
+  if(on){
+    // scroll the dots row horizontally so the active dot stays visible,
+    // WITHOUT moving the page up/down (which yanked the user to the top)
+    const left=on.offsetLeft, right=left+on.offsetWidth;
+    if(left < dots.scrollLeft) dots.scrollLeft = left - 8;
+    else if(right > dots.scrollLeft + dots.clientWidth) dots.scrollLeft = right - dots.clientWidth + 8;
+  }
 }
 
 function wizGoto(i){ const st=steps(); cur.step=Math.max(0,Math.min(i,st.length-1)); renderWizard(); window.scrollTo({top:0,behavior:'smooth'}); }
